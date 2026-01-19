@@ -8,6 +8,7 @@ import {
   saveDictionary,
   saveProfile,
   saveSocialLinks,
+  signUpUser,
 } from './lib/api'
 
 const stepLabels = [
@@ -72,6 +73,12 @@ function App() {
   const handleLogin = async (event) => {
     event.preventDefault()
     const nextUser = await loginUser(loginState)
+    setUser(nextUser)
+    setStep(2)
+  }
+
+  const handleSignup = async () => {
+    const nextUser = await signUpUser(loginState)
     setUser(nextUser)
     setStep(2)
   }
@@ -171,7 +178,12 @@ function App() {
                 required
               />
             </label>
-            <button type="submit">ログインする</button>
+            <div className="button-row">
+              <button type="submit">ログインする</button>
+              <button type="button" className="secondary" onClick={handleSignup}>
+                新規登録する
+              </button>
+            </div>
             <p className="hint">
               Supabase未接続の場合はローカル保存で進行します。
             </p>

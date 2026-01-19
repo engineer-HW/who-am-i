@@ -75,6 +75,25 @@ export const loginUser = async ({ email, password }) => {
   return nextUser
 }
 
+export const signUpUser = async ({ email, password }) => {
+  if (isSupabaseEnabled) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+    if (error) {
+      throw error
+    }
+    return { id: data.user.id, email: data.user.email }
+  }
+
+  const snapshot = loadSnapshot()
+  const nextUser = { id: `local-${email}`, email }
+  const next = { ...snapshot, user: nextUser }
+  saveSnapshot(next)
+  return nextUser
+}
+
 export const saveProfile = async (userId, profile) => {
   const snapshot = loadSnapshot()
   const next = { ...snapshot, profile }
