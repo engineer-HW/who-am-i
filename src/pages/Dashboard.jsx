@@ -1,3 +1,5 @@
+import { hasRole } from '../lib/authz'
+
 const Dashboard = ({ user, onLogout }) => (
   <div className="app">
     <header className="hero">
@@ -13,6 +15,24 @@ const Dashboard = ({ user, onLogout }) => (
         ログアウト
       </button>
     </header>
+
+    <section className="section">
+      <h2>アクセス権の状態</h2>
+      <div className="card">
+        <p className="subtext">現在のロール: {user.role}</p>
+        <div className="chips">
+          <span className="chip">
+            requireLogin: {user ? 'OK' : 'NG'}
+          </span>
+          <span className="chip">
+            requireAdmin: {hasRole(user, 'admin') ? 'OK' : 'NG'}
+          </span>
+          <span className="chip">
+            requireOwner: {hasRole(user, 'owner') ? 'OK' : 'NG'}
+          </span>
+        </div>
+      </div>
+    </section>
 
     <section className="section">
       <h2>次のステップ</h2>
