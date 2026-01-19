@@ -1,10 +1,19 @@
 import { mockFriend } from '../data/mockProfile'
+import {
+  getCurrentUser,
+  getLoginRiskStatus,
+  loginUser as loginWithPassword,
+  logoutUser as logoutSession,
+  refreshSession,
+  requestPasswordReset,
+  resetPassword,
+  signUpUser as registerUser,
+} from './authService'
 import { isSupabaseEnabled, supabase } from './supabaseClient'
 
 const STORAGE_KEY = 'who-am-i-mvp'
 
 const emptySnapshot = {
-  user: null,
   profile: {
     favoriteId: '',
     nickname: '',
@@ -56,23 +65,19 @@ const saveSnapshot = (next) => {
 
 export const getLocalSnapshot = () => loadSnapshot()
 
-export const loginUser = async ({ email, password }) => {
+export const loginUser = async (payload) => {
   if (isSupabaseEnabled) {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+      email: payload.email,
+      password: payload.password,
     })
     if (error) {
       throw error
     }
-    return { id: data.user.id, email: data.user.email }
+    return { id: data.user.id, email: data.user.email, role: 'user' }
   }
 
-  const snapshot = loadSnapshot()
-  const nextUser = { id: `local-${email}`, email }
-  const next = { ...snapshot, user: nextUser }
-  saveSnapshot(next)
-  return nextUser
+  return loginWithPassword(payload)
 }
 
 export const signUpUser = async ({ email, password }) => {
@@ -84,14 +89,10 @@ export const signUpUser = async ({ email, password }) => {
     if (error) {
       throw error
     }
-    return { id: data.user.id, email: data.user.email }
+    return { id: data.user.id, email: data.user.email, role: 'user' }
   }
 
-  const snapshot = loadSnapshot()
-  const nextUser = { id: `local-${email}`, email }
-  const next = { ...snapshot, user: nextUser }
-  saveSnapshot(next)
-  return nextUser
+  return registerUser({ email, password })
 }
 
 export const logoutUser = async () => {
@@ -102,9 +103,55 @@ export const logoutUser = async () => {
     }
   }
 
-  const snapshot = loadSnapshot()
-  const next = { ...snapshot, user: null }
-  saveSnapshot(next)
+  await logoutSession()
+}
+
+export const restoreSession = async () => {
+  if (isSupabaseEnabled) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    return user ? { id: user.id, email: user.email, role: 'user' } : null
+  }
+
+  const refreshed = await refreshSession()
+  return refreshed || getCurrentUser()
+}
+
+export const sendPasswordReset = async (payload) => {
+  if (isSupabaseEnabled) {
+    const { error } = await supabase.auth.resetPasswordForEmail(payload.email, {
+      redirectTo: payload.redirectTo,
+    })
+    if (error) {
+      throw error
+    }
+    return { ok: true }
+  }
+
+  return requestPasswordReset(payload)
+}
+
+export const updatePassword = async (payload) => {
+  if (isSupabaseEnabled) {
+    const { error } = await supabase.auth.updateUser({
+      password: payload.password,
+    })
+    if (error) {
+      throw error
+    }
+    return { ok: true }
+  }
+
+  return resetPassword(payload)
+}
+
+export const getLoginRisk = (email) => {
+  if (isSupabaseEnabled) {
+    return { locked: false, requiresCaptcha: false, remainingLockMs: 0 }
+  }
+
+  return getLoginRiskStatus(email)
 }
 
 export const saveProfile = async (userId, profile) => {

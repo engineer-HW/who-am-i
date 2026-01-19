@@ -76,6 +76,22 @@ body {
   margin: 0;
 }
 
+.hint-box {
+  background: #eef4ff;
+  color: #29415e;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  display: grid;
+  gap: 6px;
+}
+
+.dev-note {
+  font-size: 12px;
+  color: #4c5b6b;
+  word-break: break-all;
+}
+
 .hero {
   display: flex;
   justify-content: space-between;
@@ -149,6 +165,20 @@ textarea {
   font-size: 14px;
 }
 
+.password-field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
 textarea {
   min-height: 80px;
   resize: vertical;
@@ -172,6 +202,12 @@ button:disabled {
 button.secondary {
   background: #e8eef7;
   color: #29415e;
+}
+
+button.ghost {
+  background: transparent;
+  color: #3867d6;
+  padding: 6px 0;
 }
 
 .card {
