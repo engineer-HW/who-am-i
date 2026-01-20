@@ -134,10 +134,36 @@ const Login = ({
                 />
                 <button
                   type="button"
-                  className="ghost"
+                  className="password-toggle"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={
+                    showPassword
+                      ? 'パスワードを非表示にする'
+                      : 'パスワードを表示する'
+                  }
+                  title={showPassword ? 'パスワードを非表示' : 'パスワードを表示'}
                 >
-                  {showPassword ? '非表示' : '表示'}
+                  {showPassword ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path
+                        d="M12 5c5.4 0 9.8 3.6 11.4 8.6a1 1 0 0 1 0 .6C21.8 18.4 17.4 22 12 22S2.2 18.4.6 14.2a1 1 0 0 1 0-.6C2.2 8.6 6.6 5 12 5Zm0 2c-4.4 0-8 2.9-9.4 7 1.4 4.1 5 7 9.4 7s8-2.9 9.4-7c-1.4-4.1-5-7-9.4-7Zm0 2.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path
+                        d="M2.4 3.5a1 1 0 0 1 1.4 0l16.7 16.7a1 1 0 1 1-1.4 1.4l-2.3-2.3c-1.4.7-3 1.2-4.8 1.2-5.4 0-9.8-3.6-11.4-8.6a1 1 0 0 1 0-.6c.7-2 2-3.7 3.7-5L2.4 4.9a1 1 0 0 1 0-1.4Zm7 7 4.1 4.1a3 3 0 0 1-4.1-4.1Zm8.9 8.9-2.7-2.7a5 5 0 0 0-6.5-6.5L6.7 7.8a10.2 10.2 0 0 1 4.9-1.3c4.6 0 8.4 2.9 9.9 7a10.3 10.3 0 0 1-3.2 4.9Z"
+                      />
+                    </svg>
+                  )}
                 </button>
               </div>
             </label>
@@ -202,10 +228,38 @@ const Login = ({
                   />
                   <button
                     type="button"
-                    className="ghost"
+                    className="password-toggle"
                     onClick={() => setShowNewPassword((prev) => !prev)}
+                    aria-label={
+                      showNewPassword
+                        ? 'パスワードを非表示にする'
+                        : 'パスワードを表示する'
+                    }
+                    title={
+                      showNewPassword ? 'パスワードを非表示' : 'パスワードを表示'
+                    }
                   >
-                    {showNewPassword ? '非表示' : '表示'}
+                    {showNewPassword ? (
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path
+                          d="M12 5c5.4 0 9.8 3.6 11.4 8.6a1 1 0 0 1 0 .6C21.8 18.4 17.4 22 12 22S2.2 18.4.6 14.2a1 1 0 0 1 0-.6C2.2 8.6 6.6 5 12 5Zm0 2c-4.4 0-8 2.9-9.4 7 1.4 4.1 5 7 9.4 7s8-2.9 9.4-7c-1.4-4.1-5-7-9.4-7Zm0 2.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path
+                          d="M2.4 3.5a1 1 0 0 1 1.4 0l16.7 16.7a1 1 0 1 1-1.4 1.4l-2.3-2.3c-1.4.7-3 1.2-4.8 1.2-5.4 0-9.8-3.6-11.4-8.6a1 1 0 0 1 0-.6c.7-2 2-3.7 3.7-5L2.4 4.9a1 1 0 0 1 0-1.4Zm7 7 4.1 4.1a3 3 0 0 1-4.1-4.1Zm8.9 8.9-2.7-2.7a5 5 0 0 0-6.5-6.5L6.7 7.8a10.2 10.2 0 0 1 4.9-1.3c4.6 0 8.4 2.9 9.9 7a10.3 10.3 0 0 1-3.2 4.9Z"
+                        />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </label>
