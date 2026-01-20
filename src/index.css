@@ -167,10 +167,13 @@ textarea {
 
 .password-field {
   position: relative;
+  width: 100%;
 }
 
 .password-field input {
   padding-right: 44px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .password-toggle {
