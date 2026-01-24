@@ -63,10 +63,6 @@ const Login = ({
     <div className="app auth-layout">
       <header className="auth-hero">
         <h1>who-am-i</h1>
-        <p className="subtext">
-          あなたの好きなものや価値観をまとめて、友だちと共通点を見つける準備を
-          始めましょう。
-        </p>
       </header>
 
       <section className="section auth-card">
@@ -83,15 +79,15 @@ const Login = ({
             </h2>
             <p className="subtext">
               {mode === "login"
-                ? "続けるにはアカウント情報を入力してください。"
+                ? ""
                 : mode === "signup"
                 ? "はじめての方はメールとパスワードで登録できます。"
                 : mode === "resetRequest"
-                ? "登録済みのメールアドレスへリセット案内を送信します。"
+                ? "登録済みのメールアドレスを入力ください。パスワードを変更できるリンクをお送りします。"
                 : "届いたトークンと新しいパスワードを入力してください。"}
             </p>
           </div>
-          <span className="status-badge">{loading ? "接続中" : "Ready"}</span>
+          {/* <span className="status-badge">{loading ? "接続中" : "Ready"}</span> */}
         </div>
 
         <form className="form" onSubmit={handleSubmit}>

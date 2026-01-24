@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   color: #1f2933;
   background-color: #f5f7fb;
 }
@@ -54,7 +54,7 @@ body {
 }
 
 .auth-points li::before {
-  content: '✓';
+  content: "✓";
   margin-right: 8px;
   color: #3867d6;
 }
@@ -71,6 +71,11 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
+}
+
+.auth-card-header > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .status-badge {
@@ -128,7 +133,6 @@ h1 {
 }
 
 .subtext {
-  margin: 0;
   color: #4c5b6b;
 }
 
