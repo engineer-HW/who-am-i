@@ -25,11 +25,22 @@ body {
 .auth-layout {
   display: grid;
   gap: 32px;
+  min-height: 100vh;
+  grid-template-rows: auto 1fr;
 }
 
 .auth-hero {
   display: grid;
   gap: 12px;
+  justify-items: start;
+  text-align: left;
+  align-self: start;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #3867d6;
+}
+
+.auth-hero h1 {
+  margin-bottom: 0;
 }
 
 .auth-points {
@@ -50,6 +61,9 @@ body {
 
 .auth-card {
   max-width: 520px;
+  width: min(520px, 100%);
+  justify-self: center;
+  align-self: center;
 }
 
 .auth-card-header {
