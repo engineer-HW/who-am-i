@@ -62,8 +62,7 @@ const Login = ({
   return (
     <div className="app auth-layout">
       <header className="auth-hero">
-        <p className="eyebrow">Welcome</p>
-        <h1>who-am-i にログイン</h1>
+        <h1>who-am-i</h1>
         <p className="subtext">
           あなたの好きなものや価値観をまとめて、友だちと共通点を見つける準備を
           始めましょう。
@@ -79,7 +78,7 @@ const Login = ({
                 : mode === "signup"
                 ? "新規登録"
                 : mode === "resetRequest"
-                ? "パスワードリセット"
+                ? "パスワードを忘れた方"
                 : "パスワード更新"}
             </h2>
             <p className="subtext">
