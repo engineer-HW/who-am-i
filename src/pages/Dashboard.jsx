@@ -86,6 +86,20 @@ const Dashboard = () => (
           <p className="profile-name">Karry Woodson</p>
           <span className="profile-status">Photographer · Tokyo</span>
         </div>
+        <dl className="profile-info">
+          <div>
+            <dt>ID:</dt>
+            <dd>{profile.id}</dd>
+          </div>
+          <div>
+            <dt>Name:</dt>
+            <dd>{profile.name}</dd>
+          </div>
+          <div>
+            <dt>MBTI:</dt>
+            <dd>{profile.mbti}</dd>
+          </div>
+        </dl>
       </div>
 
       <nav className="side-menu" aria-label="セクションメニュー">
