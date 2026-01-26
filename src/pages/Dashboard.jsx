@@ -77,96 +77,147 @@ const suggestionProfiles = [
   },
 ]
 
-const Dashboard = () => (
-  <div className="travel-app">
-    <aside className="travel-sidebar">
-      <div className="profile-card">
-        <div className="profile-image" aria-hidden="true" />
-        <div className="profile-meta">
-          <p className="profile-name">Karry Woodson</p>
-          <span className="profile-status">Photographer · Tokyo</span>
-        </div>
-        <dl className="profile-info">
-          <div>
-            <dt>ID:</dt>
-            <dd>{profile.id}</dd>
+const Dashboard = ({ user }) => {
+  const profile = {
+    id: user?.id?.slice(0, 8) || 'whoami-01',
+    name: user?.email || 'Karry Woodson',
+    mbti: 'ENFP',
+  }
+
+  return (
+    <div className="travel-app">
+      <aside className="travel-sidebar">
+        <div className="profile-card">
+          <div className="profile-image" aria-hidden="true" />
+          <div className="profile-meta">
+            <p className="profile-name">Karry Woodson</p>
+            <span className="profile-status">Photographer · Tokyo</span>
           </div>
-          <div>
-            <dt>Name:</dt>
-            <dd>{profile.name}</dd>
-          </div>
-          <div>
-            <dt>MBTI:</dt>
-            <dd>{profile.mbti}</dd>
-          </div>
-        </dl>
-      </div>
-
-      <nav className="side-menu" aria-label="セクションメニュー">
-        <button type="button" className="side-link is-active">
-          Stories
-        </button>
-        <button type="button" className="side-link">
-          Collections
-        </button>
-        <button type="button" className="side-link">
-          Favorites
-        </button>
-        <button type="button" className="side-link">
-          Settings
-        </button>
-      </nav>
-
-      <div className="followers">
-        <p className="section-title">Followers</p>
-        <div className="avatar-row">
-          {suggestionProfiles.map((profile) => (
-            <img
-              key={profile.name}
-              src={profile.image}
-              alt={profile.name}
-              className="avatar"
-            />
-          ))}
-          <button type="button" className="avatar-more" aria-label="追加">
-            +
-          </button>
-        </div>
-      </div>
-    </aside>
-
-    <main className="travel-main">
-      <section className="featured">
-        <div className="section-header">
-          <h2>Featured Stories</h2>
-          <button type="button" className="ghost">
-            View all
-          </button>
-        </div>
-        <div className="story-list">
-          {featuredStories.map((story) => (
-            <article key={story.title} className="story-card">
-              <img src={story.image} alt={story.title} />
-              <p>{story.title}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="photo-feed">
-        <div className="section-header">
-          <h2>Photo Feed</h2>
-        </div>
-        <div className="photo-grid">
-          {photoFeed.map((photo) => (
-            <div key={photo.id} className="photo-card">
-              <img src={photo.image} alt="" />
+          <p className="profile-bio">
+            Capturing the quiet moments in everyday journeys. Always searching
+            for new coastal light and soft golden skies.
+          </p>
+          <dl className="profile-info">
+            <div>
+              <dt>ID:</dt>
+              <dd>{profile.id}</dd>
             </div>
-          ))}
+            <div>
+              <dt>Name:</dt>
+              <dd>{profile.name}</dd>
+            </div>
+            <div>
+              <dt>MBTI:</dt>
+              <dd>{profile.mbti}</dd>
+            </div>
+          </dl>
+          <div className="profile-actions">
+            <button type="button" className="primary">
+              Edit profile
+            </button>
+            <button type="button" className="ghost">
+              Share
+            </button>
+          </div>
         </div>
-      </section>
-    </main>
-  </div>
-)
+
+        <nav className="side-menu" aria-label="セクションメニュー">
+          <button type="button" className="side-link is-active">
+            Stories
+          </button>
+          <button type="button" className="side-link">
+            Collections
+          </button>
+          <button type="button" className="side-link">
+            Favorites
+          </button>
+          <button type="button" className="side-link">
+            Settings
+          </button>
+        </nav>
+
+        <div className="followers">
+          <p className="section-title">Followers</p>
+          <div className="avatar-row">
+            {suggestionProfiles.map((profile) => (
+              <img
+                key={profile.name}
+                src={profile.image}
+                alt={profile.name}
+                className="avatar"
+              />
+            ))}
+            <button type="button" className="avatar-more" aria-label="追加">
+              +
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <main className="travel-main">
+        <header className="top-bar">
+          <button type="button" className="back-link">
+            ← Back to people
+          </button>
+          <div className="search-field" role="search">
+            <span aria-hidden="true">🔍</span>
+            <input type="search" placeholder="Search stories" />
+          </div>
+          <div className="top-actions">
+            <button type="button" className="icon-button" aria-label="通知">
+              🔔
+            </button>
+            <button type="button" className="icon-button" aria-label="メニュー">
+              ⋯
+            </button>
+          </div>
+        </header>
+
+        <section className="featured">
+          <div className="section-header">
+            <div>
+              <h2>Featured Stories</h2>
+              <p className="section-subtitle">
+                Curated journeys from your latest adventures.
+              </p>
+            </div>
+            <button type="button" className="ghost">
+              View all
+            </button>
+          </div>
+          <div className="story-list">
+            {featuredStories.map((story) => (
+              <article key={story.title} className="story-card">
+                <img src={story.image} alt={story.title} />
+                <p className="story-title">{story.title}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="photo-feed">
+          <div className="section-header">
+            <div>
+              <h2>Photo Feed</h2>
+              <p className="section-subtitle">
+                Latest captures from your travel diary.
+              </p>
+            </div>
+            <button type="button" className="ghost">
+              Filter
+            </button>
+          </div>
+          <div className="photo-grid">
+            {photoFeed.map((photo) => (
+              <div key={photo.id} className="photo-card">
+                <img src={photo.image} alt="" />
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  )
+}
 
 export default Dashboard
