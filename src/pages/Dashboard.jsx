@@ -156,9 +156,6 @@ const Dashboard = ({ user }) => {
 
       <main className="travel-main">
         <header className="top-bar">
-          <button type="button" className="back-link">
-            ← Back to people
-          </button>
           <div className="search-field" role="search">
             <span aria-hidden="true">🔍</span>
             <input type="search" placeholder="Search stories" />
