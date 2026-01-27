@@ -1,88 +1,88 @@
 const featuredStories = [
   {
-    title: 'Short Means',
+    title: "Short Means",
     image:
-      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80',
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80",
   },
   {
-    title: 'Summer Escape',
+    title: "Summer Escape",
     image:
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80',
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80",
   },
   {
     title: "Knight's Story",
     image:
-      'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80',
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80",
   },
   {
-    title: 'Love Story',
+    title: "Love Story",
     image:
-      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80',
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80",
   },
   {
-    title: 'Paradise City',
+    title: "Paradise City",
     image:
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80',
+      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80",
   },
-]
+];
 
 const photoFeed = [
   {
-    id: 'alps-house',
+    id: "alps-house",
     image:
-      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80',
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80",
   },
   {
-    id: 'arctic-boat',
+    id: "arctic-boat",
     image:
-      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80',
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80",
   },
   {
-    id: 'lake-couple',
+    id: "lake-couple",
     image:
-      'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=80',
+      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=80",
   },
   {
-    id: 'valley-hike',
+    id: "valley-hike",
     image:
-      'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=600&q=80',
+      "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=600&q=80",
   },
   {
-    id: 'goat-keeper',
+    id: "goat-keeper",
     image:
-      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80',
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80",
   },
   {
-    id: 'mountain-peaks',
+    id: "mountain-peaks",
     image:
-      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80',
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80",
   },
-]
+];
 
 const suggestionProfiles = [
   {
-    name: 'Johan',
+    name: "Johan",
     image:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80',
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80",
   },
   {
-    name: 'Mina',
+    name: "Mina",
     image:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80',
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80",
   },
   {
-    name: 'Hugo',
+    name: "Hugo",
     image:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80',
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80",
   },
-]
+];
 
 const Dashboard = ({ user }) => {
   const profile = {
-    id: user?.id?.slice(0, 8) || 'whoami-01',
-    name: user?.email || 'Karry Woodson',
-    mbti: 'ENFP',
-  }
+    id: user?.id?.slice(0, 8) || "whoami-01",
+    name: user?.email || "Karry Woodson",
+    mbti: "ENFP",
+  };
 
   return (
     <div className="travel-app">
@@ -217,7 +217,7 @@ const Dashboard = ({ user }) => {
         </section>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
