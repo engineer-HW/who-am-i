@@ -430,6 +430,28 @@ button.ghost {
   color: #6b7280;
 }
 
+.profile-bio-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  padding: 16px 14px 14px;
+  position: relative;
+  display: grid;
+  gap: 8px;
+}
+
+.profile-bio-title {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: #fff;
+  padding: 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
 .profile-bio {
   margin: 0;
   font-size: 13px;

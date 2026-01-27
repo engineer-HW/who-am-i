@@ -106,7 +106,10 @@ const Dashboard = ({ user }) => {
               <dd>{profile.mbti}</dd>
             </div>
           </dl>
-          <p className="profile-bio">キングダムにはまってます。</p>
+          <div className="profile-bio-card">
+            <span className="profile-bio-title">bio</span>
+            <p className="profile-bio">キングダムにはまってます。</p>
+          </div>
           <div className="profile-actions">
             <button type="button" className="primary">
               Edit profile
