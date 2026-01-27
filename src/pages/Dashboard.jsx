@@ -90,13 +90,8 @@ const Dashboard = ({ user }) => {
         <div className="profile-card">
           <div className="profile-image" aria-hidden="true" />
           <div className="profile-meta">
-            <p className="profile-name">Karry Woodson</p>
-            <span className="profile-status">Photographer · Tokyo</span>
+            <p className="profile-name">渡邊 輝</p>
           </div>
-          <p className="profile-bio">
-            Capturing the quiet moments in everyday journeys. Always searching
-            for new coastal light and soft golden skies.
-          </p>
           <dl className="profile-info">
             <div>
               <dt>ID:</dt>
@@ -111,6 +106,7 @@ const Dashboard = ({ user }) => {
               <dd>{profile.mbti}</dd>
             </div>
           </dl>
+          <p className="profile-bio">キングダムにはまってます。</p>
           <div className="profile-actions">
             <button type="button" className="primary">
               Edit profile
