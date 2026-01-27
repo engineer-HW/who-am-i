@@ -176,10 +176,8 @@ const Dashboard = ({ user }) => {
         <section className="featured">
           <div className="section-header">
             <div>
-              <h2>Featured Stories</h2>
-              <p className="section-subtitle">
-                Curated journeys from your latest adventures.
-              </p>
+              <h2>本・漫画</h2>
+              <p className="section-subtitle">最近チェックした作品。</p>
             </div>
             <button type="button" className="ghost">
               View all
@@ -198,10 +196,8 @@ const Dashboard = ({ user }) => {
         <section className="photo-feed">
           <div className="section-header">
             <div>
-              <h2>Photo Feed</h2>
-              <p className="section-subtitle">
-                Latest captures from your travel diary.
-              </p>
+              <h2>ゲーム</h2>
+              <p className="section-subtitle">気になるタイトル。</p>
             </div>
             <button type="button" className="ghost">
               Filter
@@ -210,6 +206,25 @@ const Dashboard = ({ user }) => {
           <div className="photo-grid">
             {photoFeed.map((photo) => (
               <div key={photo.id} className="photo-card">
+                <img src={photo.image} alt="" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="photo-feed">
+          <div className="section-header">
+            <div>
+              <h2>習慣</h2>
+              <p className="section-subtitle">続けたいルーティン。</p>
+            </div>
+            <button type="button" className="ghost">
+              Filter
+            </button>
+          </div>
+          <div className="photo-grid">
+            {photoFeed.map((photo) => (
+              <div key={`${photo.id}-habit`} className="photo-card">
                 <img src={photo.image} alt="" />
               </div>
             ))}
