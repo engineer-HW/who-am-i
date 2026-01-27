@@ -367,6 +367,8 @@ button.ghost {
   padding: 10px 14px;
   border-radius: 999px;
   color: #94a3b8;
+  min-width: 360px;
+  width: 100%;
 }
 
 .search-field input {
