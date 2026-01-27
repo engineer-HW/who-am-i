@@ -108,7 +108,9 @@ const Dashboard = ({ user }) => {
           </dl>
           <div className="profile-bio-card">
             <span className="profile-bio-title">bio</span>
-            <p className="profile-bio">キングダムにはまってます。</p>
+            <p className="profile-bio">
+              キングダムにはまってます。こんにちは、おはよう、あはは
+            </p>
           </div>
           <div className="profile-actions">
             <button type="button" className="primary">

@@ -442,7 +442,7 @@ button.ghost {
 .profile-bio-title {
   position: absolute;
   top: -10px;
-  left: 12px;
+  left: -6px;
   background: #fff;
   padding: 0 6px;
   font-size: 11px;
