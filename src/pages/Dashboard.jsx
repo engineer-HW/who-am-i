@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 const featuredStories = [
   {
     title: "Short Means",
@@ -77,20 +79,167 @@ const suggestionProfiles = [
   },
 ];
 
+const defaultProfileImage =
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80";
+
+const mbtiOptions = [
+  { code: "ISTJ", label: "管理者" },
+  { code: "ISFJ", label: "擁護者" },
+  { code: "INFJ", label: "提唱者" },
+  { code: "INTJ", label: "建築家" },
+  { code: "ISTP", label: "巨匠" },
+  { code: "ISFP", label: "冒険家" },
+  { code: "INFP", label: "仲介者" },
+  { code: "INTP", label: "論理学者" },
+  { code: "ESTP", label: "起業家" },
+  { code: "ESFP", label: "エンターテイナー" },
+  { code: "ENFP", label: "広報運動家" },
+  { code: "ENTP", label: "討論者" },
+  { code: "ESTJ", label: "幹部" },
+  { code: "ESFJ", label: "領事" },
+  { code: "ENFJ", label: "主人公" },
+  { code: "ENTJ", label: "指揮官" },
+];
+
+const MbtiInput = ({ value, onChange }) => {
+  const [inputValue, setInputValue] = useState(value || "");
+  const [selectedCode, setSelectedCode] = useState(value || "");
+  const [showOptions, setShowOptions] = useState(false);
+
+  useEffect(() => {
+    setInputValue(value || "");
+    setSelectedCode(value || "");
+  }, [value]);
+
+  const normalizedInput = inputValue.trim().toLowerCase();
+  const filteredOptions = mbtiOptions.filter((option) => {
+    if (!normalizedInput) return true;
+    return option.code.toLowerCase().includes(normalizedInput);
+  });
+
+  const handleInputChange = (event) => {
+    const nextValue = event.target.value.toUpperCase();
+    setInputValue(nextValue);
+    setSelectedCode("");
+    onChange(nextValue);
+    setShowOptions(true);
+  };
+
+  const handleSelect = (code) => {
+    setInputValue(code);
+    setSelectedCode(code);
+    onChange(code);
+    setShowOptions(false);
+  };
+
+  return (
+    <div className="mbti-field">
+      <div className="mbti-input-row">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={() => setShowOptions(true)}
+          placeholder="例）INFJ / ENTP など"
+        />
+        {selectedCode ? (
+          <span className="mbti-selected">選択済み</span>
+        ) : null}
+      </div>
+      {showOptions ? (
+        <div className="mbti-options" role="listbox">
+          {filteredOptions.length ? (
+            filteredOptions.map((option) => (
+              <button
+                key={option.code}
+                type="button"
+                className={`mbti-option${
+                  selectedCode === option.code ? " is-selected" : ""
+                }`}
+                onClick={() => handleSelect(option.code)}
+              >
+                <span className="mbti-code">{option.code}</span>
+                <span className="mbti-label">| {option.label}</span>
+                {selectedCode === option.code ? (
+                  <span className="mbti-check" aria-hidden="true">
+                    ✓
+                  </span>
+                ) : null}
+              </button>
+            ))
+          ) : (
+            <div className="mbti-empty">一致する候補がありません。</div>
+          )}
+        </div>
+      ) : null}
+      <a
+        className="mbti-link"
+        href="https://example.com/mbti-test"
+        target="_blank"
+        rel="noreferrer"
+      >
+        MBTIがわからない方はこちら
+      </a>
+    </div>
+  );
+};
+
 const Dashboard = ({ user }) => {
   const profile = {
     id: user?.id?.slice(0, 8) || "whoami-01",
+  };
+  const [profileData, setProfileData] = useState({
     name: user?.email || "Karry Woodson",
     mbti: "ENFP",
+    bio: "キングダムにはまってます。こんにちは、おはよう、あはは",
+    avatarUrl: defaultProfileImage,
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftProfile, setDraftProfile] = useState(profileData);
+
+  const handleOpenEdit = () => {
+    setDraftProfile(profileData);
+    setIsEditing(true);
+  };
+
+  const handleCloseEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleDraftChange = (field) => (event) => {
+    setDraftProfile((prev) => ({ ...prev, [field]: event.target.value }));
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setDraftProfile((prev) => ({
+        ...prev,
+        avatarUrl: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveProfile = (event) => {
+    event.preventDefault();
+    setProfileData(draftProfile);
+    setIsEditing(false);
   };
 
   return (
     <div className="travel-app">
       <aside className="travel-sidebar">
         <div className="profile-card">
-          <div className="profile-image" aria-hidden="true" />
+          <div
+            className="profile-image"
+            style={{ backgroundImage: `url(${profileData.avatarUrl})` }}
+            aria-hidden="true"
+          />
           <div className="profile-meta">
-            <p className="profile-name">渡邊 輝</p>
+            <p className="profile-name">{profileData.name}</p>
           </div>
           <dl className="profile-info">
             <div>
@@ -99,21 +248,19 @@ const Dashboard = ({ user }) => {
             </div>
             <div>
               <dt>Name:</dt>
-              <dd>{profile.name}</dd>
+              <dd>{profileData.name}</dd>
             </div>
             <div>
               <dt>MBTI:</dt>
-              <dd>{profile.mbti}</dd>
+              <dd>{profileData.mbti}</dd>
             </div>
           </dl>
           <div className="profile-bio-card">
             <span className="profile-bio-title">bio</span>
-            <p className="profile-bio">
-              キングダムにはまってます。こんにちは、おはよう、あはは
-            </p>
+            <p className="profile-bio">{profileData.bio}</p>
           </div>
           <div className="profile-actions">
-            <button type="button" className="primary">
+            <button type="button" className="primary" onClick={handleOpenEdit}>
               Edit profile
             </button>
             <button type="button" className="ghost">
@@ -121,6 +268,90 @@ const Dashboard = ({ user }) => {
             </button>
           </div>
         </div>
+
+        {isEditing && (
+          <div className="modal-overlay" role="dialog" aria-modal="true">
+            <div className="modal-card">
+              <header className="modal-header">
+                <h3>Edit profile</h3>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={handleCloseEdit}
+                  aria-label="閉じる"
+                >
+                  ✕
+                </button>
+              </header>
+              <form className="modal-form" onSubmit={handleSaveProfile}>
+                <label className="form-field">
+                  <span>プロフィール画像</span>
+                  <div className="upload-row">
+                    <img
+                      src={draftProfile.avatarUrl}
+                      alt="プロフィールプレビュー"
+                      className="upload-preview"
+                    />
+                    <label className="upload-dropzone">
+                      <span className="upload-icon" aria-hidden="true">
+                        ☁️
+                      </span>
+                      <span className="upload-text">ここにファイルをドロップ</span>
+                      <span className="upload-subtext">または</span>
+                      <span className="upload-button">ファイルを選択</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                  </div>
+                </label>
+                <label className="form-field">
+                  <span>Name</span>
+                  <input
+                    type="text"
+                    value={draftProfile.name}
+                    onChange={handleDraftChange("name")}
+                    required
+                  />
+                </label>
+                <label className="form-field">
+                  <span>MBTI（任意）</span>
+                  <MbtiInput
+                    value={draftProfile.mbti}
+                    onChange={(nextValue) =>
+                      setDraftProfile((prev) => ({
+                        ...prev,
+                        mbti: nextValue,
+                      }))
+                    }
+                  />
+                </label>
+                <label className="form-field">
+                  <span>BIO</span>
+                  <textarea
+                    rows="4"
+                    value={draftProfile.bio}
+                    onChange={handleDraftChange("bio")}
+                  />
+                </label>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={handleCloseEdit}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="primary">
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         <nav className="side-menu" aria-label="セクションメニュー">
           <button type="button" className="side-link is-active">
