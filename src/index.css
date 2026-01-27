@@ -618,7 +618,8 @@ button.ghost {
 }
 
 .mbti-option:hover,
-.mbti-option.is-selected {
+.mbti-option.is-selected,
+.mbti-option.is-active {
   background: #eef4ff;
 }
 
@@ -646,6 +647,11 @@ button.ghost {
   font-size: 12px;
   color: #3867d6;
   text-decoration: none;
+}
+
+.mbti-confirmed {
+  font-size: 12px;
+  color: #1f3d7a;
 }
 
 .mbti-link:hover {

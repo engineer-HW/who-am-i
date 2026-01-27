@@ -105,10 +105,12 @@ const MbtiInput = ({ value, onChange }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [selectedCode, setSelectedCode] = useState(value || "");
   const [showOptions, setShowOptions] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
   useEffect(() => {
     setInputValue(value || "");
     setSelectedCode(value || "");
+    setActiveIndex(-1);
   }, [value]);
 
   const normalizedInput = inputValue.trim().toLowerCase();
@@ -123,6 +125,7 @@ const MbtiInput = ({ value, onChange }) => {
     setSelectedCode("");
     onChange(nextValue);
     setShowOptions(true);
+    setActiveIndex(0);
   };
 
   const handleSelect = (code) => {
@@ -130,6 +133,40 @@ const MbtiInput = ({ value, onChange }) => {
     setSelectedCode(code);
     onChange(code);
     setShowOptions(false);
+    setActiveIndex(-1);
+  };
+
+  const handleFocus = () => {
+    setShowOptions(true);
+    setActiveIndex(filteredOptions.length ? 0 : -1);
+  };
+
+  const handleKeyDown = (event) => {
+    if (!filteredOptions.length) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setShowOptions(true);
+      setActiveIndex((prev) =>
+        prev < filteredOptions.length - 1 ? prev + 1 : 0
+      );
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setShowOptions(true);
+      setActiveIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredOptions.length - 1
+      );
+    }
+
+    if (event.key === "Enter" && showOptions) {
+      const option = filteredOptions[activeIndex];
+      if (option) {
+        event.preventDefault();
+        handleSelect(option.code);
+      }
+    }
   };
 
   return (
@@ -139,7 +176,8 @@ const MbtiInput = ({ value, onChange }) => {
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={() => setShowOptions(true)}
+          onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
           placeholder="例）INFJ / ENTP など"
         />
         {selectedCode ? (
@@ -155,8 +193,10 @@ const MbtiInput = ({ value, onChange }) => {
                 type="button"
                 className={`mbti-option${
                   selectedCode === option.code ? " is-selected" : ""
-                }`}
+                }${option.code === filteredOptions[activeIndex]?.code ? " is-active" : ""}`}
                 onClick={() => handleSelect(option.code)}
+                role="option"
+                aria-selected={selectedCode === option.code}
               >
                 <span className="mbti-code">{option.code}</span>
                 <span className="mbti-label">| {option.label}</span>
@@ -171,6 +211,9 @@ const MbtiInput = ({ value, onChange }) => {
             <div className="mbti-empty">一致する候補がありません。</div>
           )}
         </div>
+      ) : null}
+      {selectedCode ? (
+        <div className="mbti-confirmed">{selectedCode} を選択済み</div>
       ) : null}
       <a
         className="mbti-link"
