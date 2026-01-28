@@ -237,6 +237,31 @@ const Dashboard = ({ user }) => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [draftProfile, setDraftProfile] = useState(profileData);
+  const [categories, setCategories] = useState([
+    {
+      id: "books",
+      title: "本・漫画",
+      subtitle: "最近チェックした作品。",
+      type: "stories",
+      actionLabel: "View all",
+    },
+    {
+      id: "games",
+      title: "ゲーム",
+      subtitle: "気になるタイトル。",
+      type: "photos",
+      actionLabel: "Filter",
+    },
+    {
+      id: "habits",
+      title: "習慣",
+      subtitle: "続けたいルーティン。",
+      type: "photos",
+      actionLabel: "Filter",
+    },
+  ]);
+  const [draggingId, setDraggingId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
 
   const handleOpenEdit = () => {
     setDraftProfile(profileData);
@@ -268,6 +293,45 @@ const Dashboard = ({ user }) => {
     event.preventDefault();
     setProfileData(draftProfile);
     setIsEditing(false);
+  };
+
+  const handleDragStart = (categoryId) => (event) => {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", categoryId);
+    setDraggingId(categoryId);
+  };
+
+  const handleDragOver = (categoryId) => (event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverId(categoryId);
+  };
+
+  const handleDrop = (categoryId) => (event) => {
+    event.preventDefault();
+    const sourceId =
+      draggingId || event.dataTransfer.getData("text/plain");
+    if (!sourceId || sourceId === categoryId) {
+      setDragOverId(null);
+      return;
+    }
+
+    setCategories((prev) => {
+      const next = [...prev];
+      const fromIndex = next.findIndex((item) => item.id === sourceId);
+      const toIndex = next.findIndex((item) => item.id === categoryId);
+      if (fromIndex === -1 || toIndex === -1) return prev;
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+    setDraggingId(null);
+    setDragOverId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingId(null);
+    setDragOverId(null);
   };
 
   return (
@@ -464,63 +528,56 @@ const Dashboard = ({ user }) => {
           </div>
         </header>
 
-        <section className="featured">
-          <div className="section-header">
-            <div>
-              <h2>本・漫画</h2>
-              <p className="section-subtitle">最近チェックした作品。</p>
-            </div>
-            <button type="button" className="ghost">
-              View all
-            </button>
-          </div>
-          <div className="story-list">
-            {featuredStories.map((story) => (
-              <article key={story.title} className="story-card">
-                <img src={story.image} alt={story.title} />
-                <p className="story-title">{story.title}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="photo-feed">
-          <div className="section-header">
-            <div>
-              <h2>ゲーム</h2>
-              <p className="section-subtitle">気になるタイトル。</p>
-            </div>
-            <button type="button" className="ghost">
-              Filter
-            </button>
-          </div>
-          <div className="photo-grid">
-            {photoFeed.map((photo) => (
-              <div key={photo.id} className="photo-card">
-                <img src={photo.image} alt="" />
+        {categories.map((category) => (
+          <section
+            key={category.id}
+            className={`category-section ${
+              category.type === "stories" ? "featured" : "photo-feed"
+            }${draggingId === category.id ? " is-dragging" : ""}${
+              dragOverId === category.id ? " is-dragover" : ""
+            }`}
+            draggable
+            onDragStart={handleDragStart(category.id)}
+            onDragOver={handleDragOver(category.id)}
+            onDrop={handleDrop(category.id)}
+            onDragEnd={handleDragEnd}
+            aria-label={`${category.title} セクション`}
+          >
+            <div className="section-header">
+              <div>
+                <h2>{category.title}</h2>
+                <p className="section-subtitle">{category.subtitle}</p>
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="photo-feed">
-          <div className="section-header">
-            <div>
-              <h2>習慣</h2>
-              <p className="section-subtitle">続けたいルーティン。</p>
-            </div>
-            <button type="button" className="ghost">
-              Filter
-            </button>
-          </div>
-          <div className="photo-grid">
-            {photoFeed.map((photo) => (
-              <div key={`${photo.id}-habit`} className="photo-card">
-                <img src={photo.image} alt="" />
+              <div className="section-actions">
+                <span className="drag-handle" aria-hidden="true">
+                  ⠿
+                </span>
+                <span className="drag-hint">ドラッグで並び替え</span>
+                <button type="button" className="ghost">
+                  {category.actionLabel}
+                </button>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+            {category.type === "stories" ? (
+              <div className="story-list">
+                {featuredStories.map((story) => (
+                  <article key={story.title} className="story-card">
+                    <img src={story.image} alt={story.title} />
+                    <p className="story-title">{story.title}</p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="photo-grid">
+                {photoFeed.map((photo) => (
+                  <div key={`${photo.id}-${category.id}`} className="photo-card">
+                    <img src={photo.image} alt="" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        ))}
       </main>
     </div>
   );
