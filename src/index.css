@@ -524,6 +524,10 @@ button.secondary {
   gap: 16px;
 }
 
+.modal-card--book {
+  width: min(620px, 100%);
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -659,12 +663,59 @@ button.secondary {
   align-items: center;
 }
 
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.toggle-button {
+  border: 1px solid #d7deea;
+  background: #fff;
+  color: #475569;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggle-button.is-active {
+  background: #1f3d7a;
+  border-color: #1f3d7a;
+  color: #fff;
+}
+
 .upload-preview {
   width: 120px;
   height: 120px;
   border-radius: 16px;
   object-fit: cover;
   border: 1px solid #e2e8f0;
+}
+
+.upload-placeholder {
+  height: 120px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 12px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.upload-helper {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0;
 }
 
 .upload-dropzone {
@@ -724,6 +775,58 @@ button.secondary {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 8px;
+}
+
+.suggestion-area {
+  display: grid;
+  gap: 8px;
+}
+
+.suggestion-status {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.suggestion-status.is-error {
+  color: #c2410c;
+}
+
+.suggestion-status.is-muted {
+  color: #94a3b8;
+}
+
+.suggestion-list {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 10px;
+  display: grid;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #1f2933;
+}
+
+.suggestion-item:hover {
+  background: #eef4ff;
+}
+
+.suggestion-author {
+  font-size: 12px;
+  color: #64748b;
 }
 
 .side-menu {
@@ -858,6 +961,7 @@ button.secondary {
   gap: 10px;
   font-size: 12px;
   color: #6b7280;
+  position: relative;
 }
 
 .story-card.is-dragging,
@@ -882,6 +986,29 @@ button.secondary {
   margin: 0;
   font-weight: 600;
   color: #1f2933;
+}
+
+.story-author {
+  margin: 0;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.card-edit {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.card-edit:hover {
+  background: rgba(15, 23, 42, 0.85);
 }
 
 .photo-grid {
