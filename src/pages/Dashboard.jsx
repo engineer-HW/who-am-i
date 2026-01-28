@@ -180,9 +180,7 @@ const MbtiInput = ({ value, onChange }) => {
           onKeyDown={handleKeyDown}
           placeholder="例）INFJ / ENTP など"
         />
-        {selectedCode ? (
-          <span className="mbti-selected">選択済み</span>
-        ) : null}
+        {selectedCode ? <span className="mbti-selected">選択済み</span> : null}
       </div>
       {showOptions ? (
         <div className="mbti-options" role="listbox">
@@ -193,7 +191,11 @@ const MbtiInput = ({ value, onChange }) => {
                 type="button"
                 className={`mbti-option${
                   selectedCode === option.code ? " is-selected" : ""
-                }${option.code === filteredOptions[activeIndex]?.code ? " is-active" : ""}`}
+                }${
+                  option.code === filteredOptions[activeIndex]?.code
+                    ? " is-active"
+                    : ""
+                }`}
                 onClick={() => handleSelect(option.code)}
                 role="option"
                 aria-selected={selectedCode === option.code}
@@ -212,9 +214,6 @@ const MbtiInput = ({ value, onChange }) => {
           )}
         </div>
       ) : null}
-      {selectedCode ? (
-        <div className="mbti-confirmed">{selectedCode} を選択済み</div>
-      ) : null}
       <a
         className="mbti-link"
         href="https://example.com/mbti-test"
@@ -228,13 +227,12 @@ const MbtiInput = ({ value, onChange }) => {
 };
 
 const Dashboard = ({ user }) => {
-  const profile = {
-    id: user?.id?.slice(0, 8) || "whoami-01",
-  };
   const [profileData, setProfileData] = useState({
-    name: user?.email || "Karry Woodson",
+    name: user?.name || "渡邊 輝",
+    age: user?.age || "26",
+    job: user?.job || "neat",
     mbti: "ENFP",
-    bio: "キングダムにはまってます。こんにちは、おはよう、あはは",
+    bio: "キングダムにはまってます。",
     avatarUrl: defaultProfileImage,
   });
   const [isEditing, setIsEditing] = useState(false);
@@ -281,17 +279,18 @@ const Dashboard = ({ user }) => {
             style={{ backgroundImage: `url(${profileData.avatarUrl})` }}
             aria-hidden="true"
           />
-          <div className="profile-meta">
-            <p className="profile-name">{profileData.name}</p>
-          </div>
           <dl className="profile-info">
-            <div>
-              <dt>ID:</dt>
-              <dd>{profile.id}</dd>
-            </div>
             <div>
               <dt>Name:</dt>
               <dd>{profileData.name}</dd>
+            </div>
+            <div>
+              <dt>Age:</dt>
+              <dd>{profileData.age}</dd>
+            </div>
+            <div>
+              <dt>Job:</dt>
+              <dd>{profileData.job}</dd>
             </div>
             <div>
               <dt>MBTI:</dt>
@@ -339,7 +338,9 @@ const Dashboard = ({ user }) => {
                       <span className="upload-icon" aria-hidden="true">
                         ☁️
                       </span>
-                      <span className="upload-text">ここにファイルをドロップ</span>
+                      <span className="upload-text">
+                        ここにファイルをドロップ
+                      </span>
                       <span className="upload-subtext">または</span>
                       <span className="upload-button">ファイルを選択</span>
                       <input
@@ -356,6 +357,24 @@ const Dashboard = ({ user }) => {
                     type="text"
                     value={draftProfile.name}
                     onChange={handleDraftChange("name")}
+                    required
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Age</span>
+                  <input
+                    type="text"
+                    value={draftProfile.age}
+                    onChange={handleDraftChange("age")}
+                    required
+                  />
+                </label>
+                <label className="form-field">
+                  <span>Job</span>
+                  <input
+                    type="text"
+                    value={draftProfile.job}
+                    onChange={handleDraftChange("job")}
                     required
                   />
                 </label>
