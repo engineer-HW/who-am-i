@@ -237,13 +237,17 @@ const Dashboard = ({ user }) => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [draftProfile, setDraftProfile] = useState(profileData);
-  const [categories, setCategories] = useState([
+  const [categories, setCategories] = useState(() => [
     {
       id: "books",
       title: "本・漫画",
       subtitle: "最近チェックした作品。",
       type: "stories",
       actionLabel: "View all",
+      items: featuredStories.map((story, index) => ({
+        ...story,
+        id: `story-${index + 1}`,
+      })),
     },
     {
       id: "games",
@@ -251,6 +255,7 @@ const Dashboard = ({ user }) => {
       subtitle: "気になるタイトル。",
       type: "photos",
       actionLabel: "Filter",
+      items: photoFeed.map((photo) => ({ ...photo })),
     },
     {
       id: "habits",
@@ -258,10 +263,13 @@ const Dashboard = ({ user }) => {
       subtitle: "続けたいルーティン。",
       type: "photos",
       actionLabel: "Filter",
+      items: photoFeed.map((photo) => ({ ...photo })),
     },
   ]);
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
+  const [draggingItem, setDraggingItem] = useState(null);
+  const [dragOverItem, setDragOverItem] = useState(null);
 
   const handleOpenEdit = () => {
     setDraftProfile(profileData);
@@ -299,6 +307,8 @@ const Dashboard = ({ user }) => {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", categoryId);
     setDraggingId(categoryId);
+    setDraggingItem(null);
+    setDragOverItem(null);
   };
 
   const handleDragOver = (categoryId) => (event) => {
@@ -332,6 +342,70 @@ const Dashboard = ({ user }) => {
   const handleDragEnd = () => {
     setDraggingId(null);
     setDragOverId(null);
+  };
+
+  const handleItemDragStart = (categoryId, itemId) => (event) => {
+    event.stopPropagation();
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData(
+      "application/x-category-item",
+      JSON.stringify({ categoryId, itemId })
+    );
+    setDraggingItem({ categoryId, itemId });
+  };
+
+  const handleItemDragOver = (categoryId, itemId) => (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverItem({ categoryId, itemId });
+  };
+
+  const handleItemDrop = (categoryId, itemId) => (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const payload = draggingItem || (() => {
+      const raw = event.dataTransfer.getData("application/x-category-item");
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return null;
+      }
+    })();
+
+    if (!payload || payload.categoryId !== categoryId) {
+      setDragOverItem(null);
+      return;
+    }
+
+    if (payload.itemId === itemId) {
+      setDragOverItem(null);
+      return;
+    }
+
+    setCategories((prev) =>
+      prev.map((category) => {
+        if (category.id !== categoryId) return category;
+        const nextItems = [...category.items];
+        const fromIndex = nextItems.findIndex(
+          (item) => item.id === payload.itemId
+        );
+        const toIndex = nextItems.findIndex((item) => item.id === itemId);
+        if (fromIndex === -1 || toIndex === -1) return category;
+        const [moved] = nextItems.splice(fromIndex, 1);
+        nextItems.splice(toIndex, 0, moved);
+        return { ...category, items: nextItems };
+      })
+    );
+
+    setDraggingItem(null);
+    setDragOverItem(null);
+  };
+
+  const handleItemDragEnd = () => {
+    setDraggingItem(null);
+    setDragOverItem(null);
   };
 
   return (
@@ -560,8 +634,26 @@ const Dashboard = ({ user }) => {
             </div>
             {category.type === "stories" ? (
               <div className="story-list">
-                {featuredStories.map((story) => (
-                  <article key={story.title} className="story-card">
+                {category.items.map((story) => (
+                  <article
+                    key={story.id}
+                    className={`story-card${
+                      draggingItem?.itemId === story.id &&
+                      draggingItem?.categoryId === category.id
+                        ? " is-dragging"
+                        : ""
+                    }${
+                      dragOverItem?.itemId === story.id &&
+                      dragOverItem?.categoryId === category.id
+                        ? " is-dragover"
+                        : ""
+                    }`}
+                    draggable
+                    onDragStart={handleItemDragStart(category.id, story.id)}
+                    onDragOver={handleItemDragOver(category.id, story.id)}
+                    onDrop={handleItemDrop(category.id, story.id)}
+                    onDragEnd={handleItemDragEnd}
+                  >
                     <img src={story.image} alt={story.title} />
                     <p className="story-title">{story.title}</p>
                   </article>
@@ -569,8 +661,26 @@ const Dashboard = ({ user }) => {
               </div>
             ) : (
               <div className="photo-grid">
-                {photoFeed.map((photo) => (
-                  <div key={`${photo.id}-${category.id}`} className="photo-card">
+                {category.items.map((photo) => (
+                  <div
+                    key={photo.id}
+                    className={`photo-card${
+                      draggingItem?.itemId === photo.id &&
+                      draggingItem?.categoryId === category.id
+                        ? " is-dragging"
+                        : ""
+                    }${
+                      dragOverItem?.itemId === photo.id &&
+                      dragOverItem?.categoryId === category.id
+                        ? " is-dragover"
+                        : ""
+                    }`}
+                    draggable
+                    onDragStart={handleItemDragStart(category.id, photo.id)}
+                    onDragOver={handleItemDragOver(category.id, photo.id)}
+                    onDrop={handleItemDrop(category.id, photo.id)}
+                    onDragEnd={handleItemDragEnd}
+                  >
                     <img src={photo.image} alt="" />
                   </div>
                 ))}

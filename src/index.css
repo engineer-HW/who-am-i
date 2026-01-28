@@ -866,6 +866,17 @@ button.ghost {
   color: #6b7280;
 }
 
+.story-card.is-dragging,
+.photo-card.is-dragging {
+  opacity: 0.6;
+}
+
+.story-card.is-dragover,
+.photo-card.is-dragover {
+  outline: 2px dashed #818cf8;
+  outline-offset: 4px;
+}
+
 .story-card img {
   width: 100%;
   aspect-ratio: 3 / 4;
