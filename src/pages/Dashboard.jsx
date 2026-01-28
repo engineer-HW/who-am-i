@@ -104,6 +104,11 @@ const mbtiOptions = [
   { code: "ENTJ", label: "指揮官" },
 ];
 
+const GOOGLE_BOOKS_PLACEHOLDER =
+  "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=400&q=80";
+
+const BOOK_MANGA_STORAGE_KEY = "book_manga_items";
+
 const makeInitialCategories = () => [
   {
     id: "books",
@@ -112,8 +117,14 @@ const makeInitialCategories = () => [
     type: "stories",
     actionLabel: "View all",
     items: featuredStories.map((story, index) => ({
-      ...story,
-      id: `story-${index + 1}`,
+      id: `book-${index + 1}`,
+      title: story.title,
+      authors: "",
+      imageUrl: story.image,
+      imageAuto: true,
+      googleBooksId: null,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     })),
   },
   {
@@ -392,6 +403,158 @@ function EditProfileModal({ draft, onChange, onClose, onSave, onImageChange }) {
   );
 }
 
+function BookItemModal({
+  mode,
+  draft,
+  onChange,
+  onClose,
+  onSave,
+  onImageChange,
+  onToggleAuto,
+  onDropImage,
+  suggestions,
+  suggestionStatus,
+  onSelectSuggestion,
+  isSuggestEnabled,
+}) {
+  return (
+    <div className="modal-overlay" role="dialog" aria-modal="true">
+      <div className="modal-card modal-card--book">
+        <header className="modal-header">
+          <h3>{mode === "edit" ? "編集" : "追加"}</h3>
+          <button
+            type="button"
+            className="button-outline"
+            onClick={onClose}
+            aria-label="閉じる"
+          >
+            ✕
+          </button>
+        </header>
+
+        <form className="modal-form" onSubmit={onSave}>
+          <label className="form-field">
+            <span>表紙画像</span>
+            <div className="toggle-row">
+              <span className="toggle-label">自動設定（Google Books）</span>
+              <button
+                type="button"
+                className={`toggle-button${
+                  draft.imageAuto ? " is-active" : ""
+                }`}
+                onClick={onToggleAuto}
+                aria-pressed={draft.imageAuto}
+              >
+                {draft.imageAuto ? "ON" : "OFF"}
+              </button>
+            </div>
+
+            <div className="upload-row">
+              <img
+                src={draft.imageUrl || GOOGLE_BOOKS_PLACEHOLDER}
+                alt="表紙プレビュー"
+                className="upload-preview"
+              />
+
+              {draft.imageAuto ? (
+                <div className="upload-placeholder">
+                  <p>
+                    {draft.imageUrl
+                      ? "Google Booksの表紙画像を使用中"
+                      : "画像が取得できませんでした"}
+                  </p>
+                  {!draft.imageUrl ? (
+                    <p className="upload-helper">
+                      必要なら自動設定をOFFにして画像をアップロードしてください。
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <label
+                  className="upload-dropzone"
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={onDropImage}
+                >
+                  <span className="upload-icon" aria-hidden="true">
+                    ☁️
+                  </span>
+                  <span className="upload-text">ここにファイルをドロップ</span>
+                  <span className="upload-subtext">または</span>
+                  <span className="upload-button">ファイルを選択</span>
+                  <input type="file" accept="image/*" onChange={onImageChange} />
+                </label>
+              )}
+            </div>
+          </label>
+
+          <label className="form-field">
+            <span>タイトル</span>
+            <input
+              type="text"
+              value={draft.title}
+              onChange={(event) => onChange({ title: event.target.value })}
+              placeholder="タイトルを入力"
+              required
+            />
+            {isSuggestEnabled ? (
+              <div className="suggestion-area">
+                {suggestionStatus === "loading" ? (
+                  <p className="suggestion-status">検索中...</p>
+                ) : null}
+                {suggestionStatus === "error" ? (
+                  <p className="suggestion-status is-error">
+                    サジェスト取得に失敗しました。手入力で続行できます。
+                  </p>
+                ) : null}
+                {suggestions.length ? (
+                  <div className="suggestion-list" role="listbox">
+                    {suggestions.map((item) => (
+                      <button
+                        type="button"
+                        key={item.id}
+                        className="suggestion-item"
+                        onClick={() => onSelectSuggestion(item)}
+                      >
+                        <span className="suggestion-title">{item.title}</span>
+                        <span className="suggestion-author">
+                          {item.authors || "著者情報なし"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <p className="suggestion-status is-muted">
+                Google Books APIキーが未設定のためサジェストは無効です。
+              </p>
+            )}
+          </label>
+
+          <label className="form-field">
+            <span>著者・作者</span>
+            <input
+              type="text"
+              value={draft.authors}
+              onChange={(event) => onChange({ authors: event.target.value })}
+              placeholder="著者名を入力"
+            />
+          </label>
+
+          <div className="modal-actions">
+            <button type="button" className="button-outline" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="primary">
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /** ---------------------------
  *  Sidebar
  *  -------------------------- */
@@ -484,6 +647,8 @@ function CategorySection({
   onItemDragOver,
   onItemDrop,
   onItemDragEnd,
+  onAddBook,
+  onEditBook,
 }) {
   const sectionClass = [
     "category-section",
@@ -512,6 +677,11 @@ function CategorySection({
             ⠿
           </span>
           <span className="drag-hint">ドラッグで並び替え</span>
+          {category.id === "books" ? (
+            <button type="button" className="primary" onClick={onAddBook}>
+              追加
+            </button>
+          ) : null}
           <button type="button" className="button-outline">
             {category.actionLabel}
           </button>
@@ -537,8 +707,26 @@ function CategorySection({
                 onDrop={(e) => onItemDrop(e, category.id, story.id)}
                 onDragEnd={onItemDragEnd}
               >
-                <img src={story.image} alt={story.title} />
+                <img
+                  src={story.imageUrl || GOOGLE_BOOKS_PLACEHOLDER}
+                  alt={story.title}
+                />
                 <p className="story-title">{story.title}</p>
+                {story.authors ? (
+                  <p className="story-author">{story.authors}</p>
+                ) : null}
+                {category.id === "books" ? (
+                  <button
+                    type="button"
+                    className="card-edit"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onEditBook?.(story);
+                    }}
+                  >
+                    編集
+                  </button>
+                ) : null}
               </article>
             );
           })}
@@ -598,6 +786,8 @@ function MainHeader() {
  *  Dashboard (container)
  *  -------------------------- */
 export default function Dashboard({ user }) {
+  const googleBooksApiKey =
+    import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || "";
   const [profile, setProfile] = useState({
     name: user?.name || "渡邊 輝",
     age: user?.age || "26",
@@ -611,9 +801,53 @@ export default function Dashboard({ user }) {
   const [draft, setDraft] = useState(profile);
 
   const [categories, setCategories] = useState(makeInitialCategories);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [bookMode, setBookMode] = useState("add");
+  const [bookDraft, setBookDraft] = useState({
+    id: "",
+    title: "",
+    authors: "",
+    imageUrl: "",
+    imageAuto: true,
+    googleBooksId: null,
+    createdAt: null,
+    updatedAt: null,
+  });
+  const [bookSuggestions, setBookSuggestions] = useState([]);
+  const [suggestionStatus, setSuggestionStatus] = useState("idle");
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
 
   const sectionDnd = useDndReorder();
   const itemDnd = useDndReorder();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(BOOK_MANGA_STORAGE_KEY);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return;
+      setCategories((prev) =>
+        prev.map((category) =>
+          category.id === "books"
+            ? { ...category, items: parsed }
+            : category
+        )
+      );
+    } catch {
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const books = categories.find((category) => category.id === "books");
+    if (!books) return;
+    window.localStorage.setItem(
+      BOOK_MANGA_STORAGE_KEY,
+      JSON.stringify(books.items)
+    );
+  }, [categories]);
 
   // --- Profile Edit
   const openEdit = () => {
@@ -635,6 +869,169 @@ export default function Dashboard({ user }) {
     event.preventDefault();
     setProfile(draft);
     setIsEditing(false);
+  };
+
+  const openAddBookModal = () => {
+    setBookMode("add");
+    setBookDraft({
+      id: "",
+      title: "",
+      authors: "",
+      imageUrl: "",
+      imageAuto: true,
+      googleBooksId: null,
+      createdAt: null,
+      updatedAt: null,
+    });
+    setSelectedSuggestion(null);
+    setBookSuggestions([]);
+    setSuggestionStatus("idle");
+    setIsBookModalOpen(true);
+  };
+
+  const openEditBookModal = (item) => {
+    setBookMode("edit");
+    setBookDraft({ ...item });
+    setSelectedSuggestion(
+      item.googleBooksId
+        ? {
+            id: item.googleBooksId,
+            title: item.title,
+            authors: item.authors,
+            imageUrl: item.imageUrl,
+          }
+        : null
+    );
+    setBookSuggestions([]);
+    setSuggestionStatus("idle");
+    setIsBookModalOpen(true);
+  };
+
+  const closeBookModal = () => setIsBookModalOpen(false);
+  const patchBookDraft = (patch) =>
+    setBookDraft((prev) => ({ ...prev, ...patch }));
+
+  useEffect(() => {
+    if (!googleBooksApiKey) {
+      setBookSuggestions([]);
+      setSuggestionStatus("idle");
+      return;
+    }
+
+    const query = bookDraft.title.trim();
+    if (!query) {
+      setBookSuggestions([]);
+      setSuggestionStatus("idle");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        setSuggestionStatus("loading");
+        const response = await fetch(
+          `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(
+            query
+          )}&maxResults=5&key=${googleBooksApiKey}`,
+          { signal: controller.signal }
+        );
+        if (!response.ok) {
+          throw new Error("failed");
+        }
+        const data = await response.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        const mapped = items.map((item) => ({
+          id: item.id,
+          title: item.volumeInfo?.title || "",
+          authors: item.volumeInfo?.authors?.join(", ") || "",
+          imageUrl: item.volumeInfo?.imageLinks?.thumbnail || "",
+        }));
+        setBookSuggestions(mapped.filter((item) => item.title));
+        setSuggestionStatus("success");
+      } catch (error) {
+        if (error.name === "AbortError") return;
+        setSuggestionStatus("error");
+      }
+    }, 300);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [bookDraft.title, googleBooksApiKey]);
+
+  const handleSelectSuggestion = (item) => {
+    setSelectedSuggestion(item);
+    patchBookDraft({
+      title: item.title,
+      authors: item.authors,
+      googleBooksId: item.id,
+      ...(bookDraft.imageAuto ? { imageUrl: item.imageUrl || "" } : {}),
+    });
+  };
+
+  const handleToggleAuto = () => {
+    setBookDraft((prev) => {
+      if (prev.imageAuto) {
+        return { ...prev, imageAuto: false };
+      }
+      return {
+        ...prev,
+        imageAuto: true,
+        imageUrl: selectedSuggestion?.imageUrl || "",
+      };
+    });
+  };
+
+  const handleBookImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      patchBookDraft({ imageUrl: reader.result, imageAuto: false });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBookImageDrop = (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      patchBookDraft({ imageUrl: reader.result, imageAuto: false });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveBook = (event) => {
+    event.preventDefault();
+    const timestamp = Date.now();
+    setCategories((prev) =>
+      prev.map((category) => {
+        if (category.id !== "books") return category;
+        if (bookMode === "edit") {
+          const nextItems = category.items.map((item) =>
+            item.id === bookDraft.id
+              ? { ...bookDraft, updatedAt: timestamp }
+              : item
+          );
+          return { ...category, items: nextItems };
+        }
+        const id =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `book-${timestamp}-${Math.random().toString(16).slice(2)}`;
+        const nextItem = {
+          ...bookDraft,
+          id,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        return { ...category, items: [...category.items, nextItem] };
+      })
+    );
+    setIsBookModalOpen(false);
   };
 
   // --- Section DnD
@@ -738,6 +1135,8 @@ export default function Dashboard({ user }) {
               onItemDragOver={onItemDragOver}
               onItemDrop={onItemDrop}
               onItemDragEnd={itemDnd.clear}
+              onAddBook={openAddBookModal}
+              onEditBook={openEditBookModal}
             />
           );
         })}
@@ -750,6 +1149,23 @@ export default function Dashboard({ user }) {
           onClose={closeEdit}
           onSave={handleSaveProfile}
           onImageChange={handleImageChange}
+        />
+      ) : null}
+
+      {isBookModalOpen ? (
+        <BookItemModal
+          mode={bookMode}
+          draft={bookDraft}
+          onChange={patchBookDraft}
+          onClose={closeBookModal}
+          onSave={handleSaveBook}
+          onImageChange={handleBookImageChange}
+          onToggleAuto={handleToggleAuto}
+          onDropImage={handleBookImageDrop}
+          suggestions={bookSuggestions}
+          suggestionStatus={suggestionStatus}
+          onSelectSuggestion={handleSelectSuggestion}
+          isSuggestEnabled={Boolean(googleBooksApiKey)}
         />
       ) : null}
     </div>
