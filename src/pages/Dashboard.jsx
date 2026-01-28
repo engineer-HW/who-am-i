@@ -434,60 +434,6 @@ function BookItemModal({
 
         <form className="modal-form" onSubmit={onSave}>
           <label className="form-field">
-            <span>表紙画像</span>
-            <div className="toggle-row">
-              <span className="toggle-label">自動設定（Google Books）</span>
-              <button
-                type="button"
-                className={`toggle-button${
-                  draft.imageAuto ? " is-active" : ""
-                }`}
-                onClick={onToggleAuto}
-                aria-pressed={draft.imageAuto}
-              >
-                {draft.imageAuto ? "ON" : "OFF"}
-              </button>
-            </div>
-
-            <div className="upload-row">
-              <img
-                src={draft.imageUrl || GOOGLE_BOOKS_PLACEHOLDER}
-                alt="表紙プレビュー"
-                className="upload-preview"
-              />
-
-              {draft.imageAuto ? (
-                <div className="upload-placeholder">
-                  <p>
-                    {draft.imageUrl
-                      ? "Google Booksの表紙画像を使用中"
-                      : "画像が取得できませんでした"}
-                  </p>
-                  {!draft.imageUrl ? (
-                    <p className="upload-helper">
-                      必要なら自動設定をOFFにして画像をアップロードしてください。
-                    </p>
-                  ) : null}
-                </div>
-              ) : (
-                <label
-                  className="upload-dropzone"
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={onDropImage}
-                >
-                  <span className="upload-icon" aria-hidden="true">
-                    ☁️
-                  </span>
-                  <span className="upload-text">ここにファイルをドロップ</span>
-                  <span className="upload-subtext">または</span>
-                  <span className="upload-button">ファイルを選択</span>
-                  <input type="file" accept="image/*" onChange={onImageChange} />
-                </label>
-              )}
-            </div>
-          </label>
-
-          <label className="form-field">
             <span>タイトル</span>
             <input
               type="text"
@@ -539,6 +485,72 @@ function BookItemModal({
               onChange={(event) => onChange({ authors: event.target.value })}
               placeholder="著者名を入力"
             />
+          </label>
+
+          <label className="form-field">
+            <span>表紙画像</span>
+            <div className="toggle-row">
+              <span className="toggle-label">自動設定（Google Books）</span>
+              <div className="toggle-switch" role="group">
+                <button
+                  type="button"
+                  className={`toggle-option${
+                    draft.imageAuto ? " is-active" : ""
+                  }`}
+                  onClick={() => onToggleAuto(true)}
+                  aria-pressed={draft.imageAuto}
+                >
+                  ON
+                </button>
+                <button
+                  type="button"
+                  className={`toggle-option${
+                    !draft.imageAuto ? " is-active" : ""
+                  }`}
+                  onClick={() => onToggleAuto(false)}
+                  aria-pressed={!draft.imageAuto}
+                >
+                  OFF
+                </button>
+              </div>
+            </div>
+
+            <div className="upload-row">
+              <img
+                src={draft.imageUrl || GOOGLE_BOOKS_PLACEHOLDER}
+                alt="表紙プレビュー"
+                className="upload-preview"
+              />
+
+              {draft.imageAuto ? (
+                <div className="upload-placeholder">
+                  <p>
+                    {draft.imageUrl
+                      ? "Google Booksの表紙画像を使用中"
+                      : "画像が取得できませんでした"}
+                  </p>
+                  {!draft.imageUrl ? (
+                    <p className="upload-helper">
+                      必要なら自動設定をOFFにして画像をアップロードしてください。
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <label
+                  className="upload-dropzone"
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={onDropImage}
+                >
+                  <span className="upload-icon" aria-hidden="true">
+                    ☁️
+                  </span>
+                  <span className="upload-text">ここにファイルをドロップ</span>
+                  <span className="upload-subtext">または</span>
+                  <span className="upload-button">ファイルを選択</span>
+                  <input type="file" accept="image/*" onChange={onImageChange} />
+                </label>
+              )}
+            </div>
           </label>
 
           <div className="modal-actions">
@@ -970,9 +982,9 @@ export default function Dashboard({ user }) {
     });
   };
 
-  const handleToggleAuto = () => {
+  const handleToggleAuto = (nextValue) => {
     setBookDraft((prev) => {
-      if (prev.imageAuto) {
+      if (!nextValue) {
         return { ...prev, imageAuto: false };
       }
       return {

@@ -674,20 +674,26 @@ button.secondary {
   color: #64748b;
 }
 
-.toggle-button {
+.toggle-switch {
+  display: inline-flex;
   border: 1px solid #d7deea;
-  background: #fff;
-  color: #475569;
-  padding: 6px 12px;
   border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.toggle-option {
+  border: none;
+  background: transparent;
+  color: #475569;
+  padding: 6px 14px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.toggle-button.is-active {
+.toggle-option.is-active {
   background: #1f3d7a;
-  border-color: #1f3d7a;
   color: #fff;
 }
 
