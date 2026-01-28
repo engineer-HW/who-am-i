@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+/** ---------------------------
+ *  Mock Data / Constants
+ *  -------------------------- */
 const featuredStories = [
   {
     title: "Short Means",
@@ -101,7 +104,69 @@ const mbtiOptions = [
   { code: "ENTJ", label: "指揮官" },
 ];
 
-const MbtiInput = ({ value, onChange }) => {
+const makeInitialCategories = () => [
+  {
+    id: "books",
+    title: "本・漫画",
+    subtitle: "最近チェックした作品。",
+    type: "stories",
+    actionLabel: "View all",
+    items: featuredStories.map((story, index) => ({
+      ...story,
+      id: `story-${index + 1}`,
+    })),
+  },
+  {
+    id: "games",
+    title: "ゲーム",
+    subtitle: "気になるタイトル。",
+    type: "photos",
+    actionLabel: "Filter",
+    items: photoFeed.map((photo) => ({ ...photo })),
+  },
+  {
+    id: "habits",
+    title: "習慣",
+    subtitle: "続けたいルーティン。",
+    type: "photos",
+    actionLabel: "Filter",
+    items: photoFeed.map((photo) => ({ ...photo })),
+  },
+];
+
+/** ---------------------------
+ *  Helpers
+ *  -------------------------- */
+function reorder(list, fromId, toId) {
+  const next = [...list];
+  const fromIndex = next.findIndex((x) => x.id === fromId);
+  const toIndex = next.findIndex((x) => x.id === toId);
+  if (fromIndex === -1 || toIndex === -1) return list;
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+  return next;
+}
+
+/** ---------------------------
+ *  Drag & Drop (generic)
+ *  -------------------------- */
+function useDndReorder() {
+  // これ1つで「何をドラッグ中か」を統一管理
+  const [dragState, setDragState] = useState({
+    kind: null, // "category" | "item"
+    source: null, // { categoryId?, id }
+    over: null, // { categoryId?, id }
+  });
+
+  const clear = () => setDragState({ kind: null, source: null, over: null });
+
+  return { dragState, setDragState, clear };
+}
+
+/** ---------------------------
+ *  MBTI Input
+ *  -------------------------- */
+function MbtiInput({ value, onChange }) {
   const [inputValue, setInputValue] = useState(value || "");
   const [selectedCode, setSelectedCode] = useState(value || "");
   const [showOptions, setShowOptions] = useState(false);
@@ -113,11 +178,13 @@ const MbtiInput = ({ value, onChange }) => {
     setActiveIndex(-1);
   }, [value]);
 
-  const normalizedInput = inputValue.trim().toLowerCase();
-  const filteredOptions = mbtiOptions.filter((option) => {
-    if (!normalizedInput) return true;
-    return option.code.toLowerCase().includes(normalizedInput);
-  });
+  const filteredOptions = useMemo(() => {
+    const normalized = inputValue.trim().toLowerCase();
+    return mbtiOptions.filter((option) => {
+      if (!normalized) return true;
+      return option.code.toLowerCase().includes(normalized);
+    });
+  }, [inputValue]);
 
   const handleInputChange = (event) => {
     const nextValue = event.target.value.toUpperCase();
@@ -150,22 +217,21 @@ const MbtiInput = ({ value, onChange }) => {
       setActiveIndex((prev) =>
         prev < filteredOptions.length - 1 ? prev + 1 : 0
       );
-    }
-
-    if (event.key === "ArrowUp") {
+    } else if (event.key === "ArrowUp") {
       event.preventDefault();
       setShowOptions(true);
       setActiveIndex((prev) =>
         prev > 0 ? prev - 1 : filteredOptions.length - 1
       );
-    }
-
-    if (event.key === "Enter" && showOptions) {
+    } else if (event.key === "Enter" && showOptions) {
       const option = filteredOptions[activeIndex];
       if (option) {
         event.preventDefault();
         handleSelect(option.code);
       }
+    } else if (event.key === "Escape") {
+      setShowOptions(false);
+      setActiveIndex(-1);
     }
   };
 
@@ -179,23 +245,21 @@ const MbtiInput = ({ value, onChange }) => {
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           placeholder="例）INFJ / ENTP など"
+          aria-label="MBTI入力"
         />
         {selectedCode ? <span className="mbti-selected">選択済み</span> : null}
       </div>
+
       {showOptions ? (
         <div className="mbti-options" role="listbox">
           {filteredOptions.length ? (
-            filteredOptions.map((option) => (
+            filteredOptions.map((option, idx) => (
               <button
                 key={option.code}
                 type="button"
                 className={`mbti-option${
                   selectedCode === option.code ? " is-selected" : ""
-                }${
-                  option.code === filteredOptions[activeIndex]?.code
-                    ? " is-active"
-                    : ""
-                }`}
+                }${idx === activeIndex ? " is-active" : ""}`}
                 onClick={() => handleSelect(option.code)}
                 role="option"
                 aria-selected={selectedCode === option.code}
@@ -214,6 +278,7 @@ const MbtiInput = ({ value, onChange }) => {
           )}
         </div>
       ) : null}
+
       <a
         className="mbti-link"
         href="https://example.com/mbti-test"
@@ -224,10 +289,316 @@ const MbtiInput = ({ value, onChange }) => {
       </a>
     </div>
   );
-};
+}
 
-const Dashboard = ({ user }) => {
-  const [profileData, setProfileData] = useState({
+/** ---------------------------
+ *  Modal
+ *  -------------------------- */
+function EditProfileModal({ draft, onChange, onClose, onSave, onImageChange }) {
+  return (
+    <div className="modal-overlay" role="dialog" aria-modal="true">
+      <div className="modal-card">
+        <header className="modal-header">
+          <h3>Edit profile</h3>
+          <button
+            type="button"
+            className="button-outline"
+            onClick={onClose}
+            aria-label="閉じる"
+          >
+            ✕
+          </button>
+        </header>
+
+        <form className="modal-form" onSubmit={onSave}>
+          <label className="form-field">
+            <span>プロフィール画像</span>
+            <div className="upload-row">
+              <img
+                src={draft.avatarUrl}
+                alt="プロフィールプレビュー"
+                className="upload-preview"
+              />
+              <label className="upload-dropzone">
+                <span className="upload-icon" aria-hidden="true">
+                  ☁️
+                </span>
+                <span className="upload-text">ここにファイルをドロップ</span>
+                <span className="upload-subtext">または</span>
+                <span className="upload-button">ファイルを選択</span>
+                <input type="file" accept="image/*" onChange={onImageChange} />
+              </label>
+            </div>
+          </label>
+
+          <label className="form-field">
+            <span>Name</span>
+            <input
+              type="text"
+              value={draft.name}
+              onChange={(e) => onChange({ name: e.target.value })}
+              required
+            />
+          </label>
+
+          <label className="form-field">
+            <span>Age</span>
+            <input
+              type="text"
+              value={draft.age}
+              onChange={(e) => onChange({ age: e.target.value })}
+              required
+            />
+          </label>
+
+          <label className="form-field">
+            <span>Job</span>
+            <input
+              type="text"
+              value={draft.job}
+              onChange={(e) => onChange({ job: e.target.value })}
+              required
+            />
+          </label>
+
+          <label className="form-field">
+            <span>MBTI（任意）</span>
+            <MbtiInput
+              value={draft.mbti}
+              onChange={(nextValue) => onChange({ mbti: nextValue })}
+            />
+          </label>
+
+          <label className="form-field">
+            <span>BIO</span>
+            <textarea
+              rows="4"
+              value={draft.bio}
+              onChange={(e) => onChange({ bio: e.target.value })}
+            />
+          </label>
+
+          <div className="modal-actions">
+            <button type="button" className="button-outline" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="primary">
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/** ---------------------------
+ *  Sidebar
+ *  -------------------------- */
+function Sidebar({ profile, onEdit }) {
+  return (
+    <aside className="travel-sidebar">
+      <div className="profile-card">
+        <div
+          className="profile-image"
+          style={{ backgroundImage: `url(${profile.avatarUrl})` }}
+          aria-hidden="true"
+        />
+        <dl className="profile-info">
+          <div>
+            <dt>Name:</dt>
+            <dd>{profile.name}</dd>
+          </div>
+          <div>
+            <dt>Age:</dt>
+            <dd>{profile.age}</dd>
+          </div>
+          <div>
+            <dt>Job:</dt>
+            <dd>{profile.job}</dd>
+          </div>
+          <div>
+            <dt>MBTI:</dt>
+            <dd>{profile.mbti}</dd>
+          </div>
+        </dl>
+
+        <div className="profile-bio-card">
+          <span className="profile-bio-title">bio</span>
+          <p className="profile-bio">{profile.bio}</p>
+        </div>
+
+        <div className="profile-actions">
+          <button type="button" className="primary" onClick={onEdit}>
+            Edit profile
+          </button>
+          <button type="button" className="button-outline">
+            Share
+          </button>
+        </div>
+      </div>
+
+      <nav className="side-menu" aria-label="セクションメニュー">
+        <button type="button" className="side-link is-active">
+          Stories
+        </button>
+        <button type="button" className="side-link">
+          Collections
+        </button>
+        <button type="button" className="side-link">
+          Favorites
+        </button>
+        <button type="button" className="side-link">
+          Settings
+        </button>
+      </nav>
+
+      <div className="followers">
+        <p className="section-title">Followers</p>
+        <div className="avatar-row">
+          {suggestionProfiles.map((p) => (
+            <img key={p.name} src={p.image} alt={p.name} className="avatar" />
+          ))}
+          <button type="button" className="avatar-more" aria-label="追加">
+            +
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+/** ---------------------------
+ *  Category Section
+ *  -------------------------- */
+function CategorySection({
+  category,
+  isDragging,
+  isDragOver,
+  onSectionDragStart,
+  onSectionDragOver,
+  onSectionDrop,
+  onSectionDragEnd,
+  itemDragState,
+  onItemDragStart,
+  onItemDragOver,
+  onItemDrop,
+  onItemDragEnd,
+}) {
+  const sectionClass = [
+    "category-section",
+    category.type === "stories" ? "featured" : "photo-feed",
+    isDragging ? " is-dragging" : "",
+    isDragOver ? " is-dragover" : "",
+  ].join("");
+
+  return (
+    <section
+      className={sectionClass}
+      draggable
+      onDragStart={onSectionDragStart}
+      onDragOver={onSectionDragOver}
+      onDrop={onSectionDrop}
+      onDragEnd={onSectionDragEnd}
+      aria-label={`${category.title} セクション`}
+    >
+      <div className="section-header">
+        <div>
+          <h2>{category.title}</h2>
+          <p className="section-subtitle">{category.subtitle}</p>
+        </div>
+        <div className="section-actions">
+          <span className="drag-handle" aria-hidden="true">
+            ⠿
+          </span>
+          <span className="drag-hint">ドラッグで並び替え</span>
+          <button type="button" className="button-outline">
+            {category.actionLabel}
+          </button>
+        </div>
+      </div>
+
+      {category.type === "stories" ? (
+        <div className="story-list">
+          {category.items.map((story) => {
+            const itemKey = `${category.id}:${story.id}`;
+            const isItemDragging = itemDragState.source?.key === itemKey;
+            const isItemOver = itemDragState.over?.key === itemKey;
+
+            return (
+              <article
+                key={story.id}
+                className={`story-card${isItemDragging ? " is-dragging" : ""}${
+                  isItemOver ? " is-dragover" : ""
+                }`}
+                draggable
+                onDragStart={(e) => onItemDragStart(e, category.id, story.id)}
+                onDragOver={(e) => onItemDragOver(e, category.id, story.id)}
+                onDrop={(e) => onItemDrop(e, category.id, story.id)}
+                onDragEnd={onItemDragEnd}
+              >
+                <img src={story.image} alt={story.title} />
+                <p className="story-title">{story.title}</p>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="photo-grid">
+          {category.items.map((photo) => {
+            const itemKey = `${category.id}:${photo.id}`;
+            const isItemDragging = itemDragState.source?.key === itemKey;
+            const isItemOver = itemDragState.over?.key === itemKey;
+
+            return (
+              <div
+                key={photo.id}
+                className={`photo-card${isItemDragging ? " is-dragging" : ""}${
+                  isItemOver ? " is-dragover" : ""
+                }`}
+                draggable
+                onDragStart={(e) => onItemDragStart(e, category.id, photo.id)}
+                onDragOver={(e) => onItemDragOver(e, category.id, photo.id)}
+                onDrop={(e) => onItemDrop(e, category.id, photo.id)}
+                onDragEnd={onItemDragEnd}
+              >
+                <img src={photo.image} alt="" />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** ---------------------------
+ *  Main
+ *  -------------------------- */
+function MainHeader() {
+  return (
+    <header className="top-bar">
+      <div className="search-field" role="search">
+        <span aria-hidden="true">🔍</span>
+        <input type="search" placeholder="Search stories" />
+      </div>
+      <div className="top-actions">
+        <button type="button" className="icon-button" aria-label="通知">
+          🔔
+        </button>
+        <button type="button" className="icon-button" aria-label="メニュー">
+          ⋯
+        </button>
+      </div>
+    </header>
+  );
+}
+
+/** ---------------------------
+ *  Dashboard (container)
+ *  -------------------------- */
+export default function Dashboard({ user }) {
+  const [profile, setProfile] = useState({
     name: user?.name || "渡邊 輝",
     age: user?.age || "26",
     job: user?.job || "neat",
@@ -235,462 +606,152 @@ const Dashboard = ({ user }) => {
     bio: "キングダムにはまってます。",
     avatarUrl: defaultProfileImage,
   });
-  const [isEditing, setIsEditing] = useState(false);
-  const [draftProfile, setDraftProfile] = useState(profileData);
-  const [categories, setCategories] = useState(() => [
-    {
-      id: "books",
-      title: "本・漫画",
-      subtitle: "最近チェックした作品。",
-      type: "stories",
-      actionLabel: "View all",
-      items: featuredStories.map((story, index) => ({
-        ...story,
-        id: `story-${index + 1}`,
-      })),
-    },
-    {
-      id: "games",
-      title: "ゲーム",
-      subtitle: "気になるタイトル。",
-      type: "photos",
-      actionLabel: "Filter",
-      items: photoFeed.map((photo) => ({ ...photo })),
-    },
-    {
-      id: "habits",
-      title: "習慣",
-      subtitle: "続けたいルーティン。",
-      type: "photos",
-      actionLabel: "Filter",
-      items: photoFeed.map((photo) => ({ ...photo })),
-    },
-  ]);
-  const [draggingId, setDraggingId] = useState(null);
-  const [dragOverId, setDragOverId] = useState(null);
-  const [draggingItem, setDraggingItem] = useState(null);
-  const [dragOverItem, setDragOverItem] = useState(null);
 
-  const handleOpenEdit = () => {
-    setDraftProfile(profileData);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(profile);
+
+  const [categories, setCategories] = useState(makeInitialCategories);
+
+  const sectionDnd = useDndReorder();
+  const itemDnd = useDndReorder();
+
+  // --- Profile Edit
+  const openEdit = () => {
+    setDraft(profile);
     setIsEditing(true);
   };
-
-  const handleCloseEdit = () => {
-    setIsEditing(false);
-  };
-
-  const handleDraftChange = (field) => (event) => {
-    setDraftProfile((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const closeEdit = () => setIsEditing(false);
+  const patchDraft = (patch) => setDraft((prev) => ({ ...prev, ...patch }));
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      setDraftProfile((prev) => ({
-        ...prev,
-        avatarUrl: reader.result,
-      }));
-    };
+    reader.onload = () => patchDraft({ avatarUrl: reader.result });
     reader.readAsDataURL(file);
   };
 
   const handleSaveProfile = (event) => {
     event.preventDefault();
-    setProfileData(draftProfile);
+    setProfile(draft);
     setIsEditing(false);
   };
 
-  const handleDragStart = (categoryId) => (event) => {
+  // --- Section DnD
+  const onSectionDragStart = (categoryId) => (event) => {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", categoryId);
-    setDraggingId(categoryId);
-    setDraggingItem(null);
-    setDragOverItem(null);
+    sectionDnd.setDragState({
+      kind: "category",
+      source: { id: categoryId },
+      over: null,
+    });
   };
 
-  const handleDragOver = (categoryId) => (event) => {
+  const onSectionDragOver = (categoryId) => (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    setDragOverId(categoryId);
+    sectionDnd.setDragState((prev) => ({
+      ...prev,
+      over: { id: categoryId },
+    }));
   };
 
-  const handleDrop = (categoryId) => (event) => {
+  const onSectionDrop = (categoryId) => (event) => {
     event.preventDefault();
     const sourceId =
-      draggingId || event.dataTransfer.getData("text/plain");
-    if (!sourceId || sourceId === categoryId) {
-      setDragOverId(null);
-      return;
-    }
+      sectionDnd.dragState.source?.id ||
+      event.dataTransfer.getData("text/plain");
+    if (!sourceId || sourceId === categoryId) return sectionDnd.clear();
 
-    setCategories((prev) => {
-      const next = [...prev];
-      const fromIndex = next.findIndex((item) => item.id === sourceId);
-      const toIndex = next.findIndex((item) => item.id === categoryId);
-      if (fromIndex === -1 || toIndex === -1) return prev;
-      const [moved] = next.splice(fromIndex, 1);
-      next.splice(toIndex, 0, moved);
-      return next;
-    });
-    setDraggingId(null);
-    setDragOverId(null);
+    setCategories((prev) => reorder(prev, sourceId, categoryId));
+    sectionDnd.clear();
   };
 
-  const handleDragEnd = () => {
-    setDraggingId(null);
-    setDragOverId(null);
-  };
-
-  const handleItemDragStart = (categoryId, itemId) => (event) => {
+  // --- Item DnD
+  const onItemDragStart = (event, categoryId, itemId) => {
     event.stopPropagation();
     event.dataTransfer.effectAllowed = "move";
+    const payload = { categoryId, itemId };
     event.dataTransfer.setData(
       "application/x-category-item",
-      JSON.stringify({ categoryId, itemId })
+      JSON.stringify(payload)
     );
-    setDraggingItem({ categoryId, itemId });
+
+    itemDnd.setDragState({
+      kind: "item",
+      source: { categoryId, id: itemId, key: `${categoryId}:${itemId}` },
+      over: null,
+    });
   };
 
-  const handleItemDragOver = (categoryId, itemId) => (event) => {
+  const onItemDragOver = (event, categoryId, itemId) => {
     event.preventDefault();
     event.stopPropagation();
-    event.dataTransfer.dropEffect = "move";
-    setDragOverItem({ categoryId, itemId });
+    itemDnd.setDragState((prev) => ({
+      ...prev,
+      over: { categoryId, id: itemId, key: `${categoryId}:${itemId}` },
+    }));
   };
 
-  const handleItemDrop = (categoryId, itemId) => (event) => {
+  const onItemDrop = (event, categoryId, itemId) => {
     event.preventDefault();
     event.stopPropagation();
-    const payload = draggingItem || (() => {
-      const raw = event.dataTransfer.getData("application/x-category-item");
-      if (!raw) return null;
-      try {
-        return JSON.parse(raw);
-      } catch (error) {
-        return null;
-      }
-    })();
 
-    if (!payload || payload.categoryId !== categoryId) {
-      setDragOverItem(null);
-      return;
-    }
-
-    if (payload.itemId === itemId) {
-      setDragOverItem(null);
-      return;
-    }
+    const source = itemDnd.dragState.source;
+    if (!source || source.categoryId !== categoryId) return itemDnd.clear();
+    if (source.id === itemId) return itemDnd.clear();
 
     setCategories((prev) =>
-      prev.map((category) => {
-        if (category.id !== categoryId) return category;
-        const nextItems = [...category.items];
-        const fromIndex = nextItems.findIndex(
-          (item) => item.id === payload.itemId
-        );
-        const toIndex = nextItems.findIndex((item) => item.id === itemId);
-        if (fromIndex === -1 || toIndex === -1) return category;
-        const [moved] = nextItems.splice(fromIndex, 1);
-        nextItems.splice(toIndex, 0, moved);
-        return { ...category, items: nextItems };
+      prev.map((cat) => {
+        if (cat.id !== categoryId) return cat;
+        return { ...cat, items: reorder(cat.items, source.id, itemId) };
       })
     );
 
-    setDraggingItem(null);
-    setDragOverItem(null);
-  };
-
-  const handleItemDragEnd = () => {
-    setDraggingItem(null);
-    setDragOverItem(null);
+    itemDnd.clear();
   };
 
   return (
     <div className="travel-app">
-      <aside className="travel-sidebar">
-        <div className="profile-card">
-          <div
-            className="profile-image"
-            style={{ backgroundImage: `url(${profileData.avatarUrl})` }}
-            aria-hidden="true"
-          />
-          <dl className="profile-info">
-            <div>
-              <dt>Name:</dt>
-              <dd>{profileData.name}</dd>
-            </div>
-            <div>
-              <dt>Age:</dt>
-              <dd>{profileData.age}</dd>
-            </div>
-            <div>
-              <dt>Job:</dt>
-              <dd>{profileData.job}</dd>
-            </div>
-            <div>
-              <dt>MBTI:</dt>
-              <dd>{profileData.mbti}</dd>
-            </div>
-          </dl>
-          <div className="profile-bio-card">
-            <span className="profile-bio-title">bio</span>
-            <p className="profile-bio">{profileData.bio}</p>
-          </div>
-          <div className="profile-actions">
-            <button type="button" className="primary" onClick={handleOpenEdit}>
-              Edit profile
-            </button>
-            <button type="button" className="ghost">
-              Share
-            </button>
-          </div>
-        </div>
-
-        {isEditing && (
-          <div className="modal-overlay" role="dialog" aria-modal="true">
-            <div className="modal-card">
-              <header className="modal-header">
-                <h3>Edit profile</h3>
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={handleCloseEdit}
-                  aria-label="閉じる"
-                >
-                  ✕
-                </button>
-              </header>
-              <form className="modal-form" onSubmit={handleSaveProfile}>
-                <label className="form-field">
-                  <span>プロフィール画像</span>
-                  <div className="upload-row">
-                    <img
-                      src={draftProfile.avatarUrl}
-                      alt="プロフィールプレビュー"
-                      className="upload-preview"
-                    />
-                    <label className="upload-dropzone">
-                      <span className="upload-icon" aria-hidden="true">
-                        ☁️
-                      </span>
-                      <span className="upload-text">
-                        ここにファイルをドロップ
-                      </span>
-                      <span className="upload-subtext">または</span>
-                      <span className="upload-button">ファイルを選択</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                      />
-                    </label>
-                  </div>
-                </label>
-                <label className="form-field">
-                  <span>Name</span>
-                  <input
-                    type="text"
-                    value={draftProfile.name}
-                    onChange={handleDraftChange("name")}
-                    required
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Age</span>
-                  <input
-                    type="text"
-                    value={draftProfile.age}
-                    onChange={handleDraftChange("age")}
-                    required
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Job</span>
-                  <input
-                    type="text"
-                    value={draftProfile.job}
-                    onChange={handleDraftChange("job")}
-                    required
-                  />
-                </label>
-                <label className="form-field">
-                  <span>MBTI（任意）</span>
-                  <MbtiInput
-                    value={draftProfile.mbti}
-                    onChange={(nextValue) =>
-                      setDraftProfile((prev) => ({
-                        ...prev,
-                        mbti: nextValue,
-                      }))
-                    }
-                  />
-                </label>
-                <label className="form-field">
-                  <span>BIO</span>
-                  <textarea
-                    rows="4"
-                    value={draftProfile.bio}
-                    onChange={handleDraftChange("bio")}
-                  />
-                </label>
-                <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="ghost"
-                    onClick={handleCloseEdit}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="primary">
-                    Save
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        <nav className="side-menu" aria-label="セクションメニュー">
-          <button type="button" className="side-link is-active">
-            Stories
-          </button>
-          <button type="button" className="side-link">
-            Collections
-          </button>
-          <button type="button" className="side-link">
-            Favorites
-          </button>
-          <button type="button" className="side-link">
-            Settings
-          </button>
-        </nav>
-
-        <div className="followers">
-          <p className="section-title">Followers</p>
-          <div className="avatar-row">
-            {suggestionProfiles.map((profile) => (
-              <img
-                key={profile.name}
-                src={profile.image}
-                alt={profile.name}
-                className="avatar"
-              />
-            ))}
-            <button type="button" className="avatar-more" aria-label="追加">
-              +
-            </button>
-          </div>
-        </div>
-      </aside>
+      <Sidebar profile={profile} onEdit={openEdit} />
 
       <main className="travel-main">
-        <header className="top-bar">
-          <div className="search-field" role="search">
-            <span aria-hidden="true">🔍</span>
-            <input type="search" placeholder="Search stories" />
-          </div>
-          <div className="top-actions">
-            <button type="button" className="icon-button" aria-label="通知">
-              🔔
-            </button>
-            <button type="button" className="icon-button" aria-label="メニュー">
-              ⋯
-            </button>
-          </div>
-        </header>
+        <MainHeader />
 
-        {categories.map((category) => (
-          <section
-            key={category.id}
-            className={`category-section ${
-              category.type === "stories" ? "featured" : "photo-feed"
-            }${draggingId === category.id ? " is-dragging" : ""}${
-              dragOverId === category.id ? " is-dragover" : ""
-            }`}
-            draggable
-            onDragStart={handleDragStart(category.id)}
-            onDragOver={handleDragOver(category.id)}
-            onDrop={handleDrop(category.id)}
-            onDragEnd={handleDragEnd}
-            aria-label={`${category.title} セクション`}
-          >
-            <div className="section-header">
-              <div>
-                <h2>{category.title}</h2>
-                <p className="section-subtitle">{category.subtitle}</p>
-              </div>
-              <div className="section-actions">
-                <span className="drag-handle" aria-hidden="true">
-                  ⠿
-                </span>
-                <span className="drag-hint">ドラッグで並び替え</span>
-                <button type="button" className="ghost">
-                  {category.actionLabel}
-                </button>
-              </div>
-            </div>
-            {category.type === "stories" ? (
-              <div className="story-list">
-                {category.items.map((story) => (
-                  <article
-                    key={story.id}
-                    className={`story-card${
-                      draggingItem?.itemId === story.id &&
-                      draggingItem?.categoryId === category.id
-                        ? " is-dragging"
-                        : ""
-                    }${
-                      dragOverItem?.itemId === story.id &&
-                      dragOverItem?.categoryId === category.id
-                        ? " is-dragover"
-                        : ""
-                    }`}
-                    draggable
-                    onDragStart={handleItemDragStart(category.id, story.id)}
-                    onDragOver={handleItemDragOver(category.id, story.id)}
-                    onDrop={handleItemDrop(category.id, story.id)}
-                    onDragEnd={handleItemDragEnd}
-                  >
-                    <img src={story.image} alt={story.title} />
-                    <p className="story-title">{story.title}</p>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="photo-grid">
-                {category.items.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className={`photo-card${
-                      draggingItem?.itemId === photo.id &&
-                      draggingItem?.categoryId === category.id
-                        ? " is-dragging"
-                        : ""
-                    }${
-                      dragOverItem?.itemId === photo.id &&
-                      dragOverItem?.categoryId === category.id
-                        ? " is-dragover"
-                        : ""
-                    }`}
-                    draggable
-                    onDragStart={handleItemDragStart(category.id, photo.id)}
-                    onDragOver={handleItemDragOver(category.id, photo.id)}
-                    onDrop={handleItemDrop(category.id, photo.id)}
-                    onDragEnd={handleItemDragEnd}
-                  >
-                    <img src={photo.image} alt="" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        ))}
+        {categories.map((category) => {
+          const isDragging = sectionDnd.dragState.source?.id === category.id;
+          const isDragOver = sectionDnd.dragState.over?.id === category.id;
+
+          return (
+            <CategorySection
+              key={category.id}
+              category={category}
+              isDragging={isDragging}
+              isDragOver={isDragOver}
+              onSectionDragStart={onSectionDragStart(category.id)}
+              onSectionDragOver={onSectionDragOver(category.id)}
+              onSectionDrop={onSectionDrop(category.id)}
+              onSectionDragEnd={sectionDnd.clear}
+              itemDragState={itemDnd.dragState}
+              onItemDragStart={onItemDragStart}
+              onItemDragOver={onItemDragOver}
+              onItemDrop={onItemDrop}
+              onItemDragEnd={itemDnd.clear}
+            />
+          );
+        })}
       </main>
+
+      {isEditing ? (
+        <EditProfileModal
+          draft={draft}
+          onChange={patchDraft}
+          onClose={closeEdit}
+          onSave={handleSaveProfile}
+          onImageChange={handleImageChange}
+        />
+      ) : null}
     </div>
   );
-};
-
-export default Dashboard;
+}

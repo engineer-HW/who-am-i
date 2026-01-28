@@ -253,12 +253,6 @@ button.secondary {
   color: #29415e;
 }
 
-button.ghost {
-  background: transparent;
-  color: #3867d6;
-  padding: 6px 0;
-}
-
 .card {
   border: 1px solid #e0e6ef;
   border-radius: 12px;
@@ -339,12 +333,12 @@ button.ghost {
 .travel-main {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 32px;
 }
 
 .top-bar {
   display: flex;
-  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
 }
@@ -499,7 +493,7 @@ button.ghost {
   cursor: pointer;
 }
 
-.ghost {
+.button-outline {
   border: 1px solid #e2e8f0;
   background: #fff;
   color: #475569;
