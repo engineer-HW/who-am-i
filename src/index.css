@@ -1000,21 +1000,13 @@ button.secondary {
   color: #94a3b8;
 }
 
-.card-edit {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  border: none;
-  background: rgba(15, 23, 42, 0.72);
-  color: #fff;
-  font-size: 11px;
-  padding: 6px 10px;
-  border-radius: 999px;
+.story-image.is-editable {
   cursor: pointer;
 }
 
-.card-edit:hover {
-  background: rgba(15, 23, 42, 0.85);
+.story-image.is-editable:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 4px;
 }
 
 .photo-grid {

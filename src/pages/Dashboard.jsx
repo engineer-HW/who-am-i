@@ -722,22 +722,32 @@ function CategorySection({
                 <img
                   src={story.imageUrl || GOOGLE_BOOKS_PLACEHOLDER}
                   alt={story.title}
+                  className={
+                    category.id === "books" ? "story-image is-editable" : "story-image"
+                  }
+                  role={category.id === "books" ? "button" : undefined}
+                  tabIndex={category.id === "books" ? 0 : undefined}
+                  onClick={
+                    category.id === "books"
+                      ? () => {
+                          onEditBook?.(story);
+                        }
+                      : undefined
+                  }
+                  onKeyDown={
+                    category.id === "books"
+                      ? (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            onEditBook?.(story);
+                          }
+                        }
+                      : undefined
+                  }
                 />
                 <p className="story-title">{story.title}</p>
                 {story.authors ? (
                   <p className="story-author">{story.authors}</p>
-                ) : null}
-                {category.id === "books" ? (
-                  <button
-                    type="button"
-                    className="card-edit"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onEditBook?.(story);
-                    }}
-                  >
-                    編集
-                  </button>
                 ) : null}
               </article>
             );
