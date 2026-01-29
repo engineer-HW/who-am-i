@@ -107,7 +107,13 @@ const mbtiOptions = [
 const GOOGLE_BOOKS_PLACEHOLDER =
   "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=400&q=80";
 
-const BOOK_MANGA_STORAGE_KEY = "book_manga_items";
+const CATEGORY_STORAGE_KEYS = {
+  books: "book_manga_items",
+  games: "game_items",
+  habits: "habit_items",
+};
+
+const EDITABLE_CATEGORY_IDS = ["books", "games", "habits"];
 
 const makeInitialCategories = () => [
   {
@@ -131,17 +137,89 @@ const makeInitialCategories = () => [
     id: "games",
     title: "ゲーム",
     subtitle: "気になるタイトル。",
-    type: "photos",
-    actionLabel: "Filter",
-    items: photoFeed.map((photo) => ({ ...photo })),
+    type: "stories",
+    actionLabel: "View all",
+    items: [
+      {
+        id: "game-1",
+        title: "どうぶつの森",
+        authors: "Nintendo",
+        imageUrl: photoFeed[0].image,
+        imageAuto: false,
+        googleBooksId: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: "game-2",
+        title: "ゼルダの伝説",
+        authors: "Nintendo",
+        imageUrl: photoFeed[1].image,
+        imageAuto: false,
+        googleBooksId: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: "game-3",
+        title: "スプラトゥーン",
+        authors: "Nintendo",
+        imageUrl: photoFeed[2].image,
+        imageAuto: false,
+        googleBooksId: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: "game-4",
+        title: "マリオカート",
+        authors: "Nintendo",
+        imageUrl: photoFeed[3].image,
+        imageAuto: false,
+        googleBooksId: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    ],
   },
   {
     id: "habits",
     title: "習慣",
     subtitle: "続けたいルーティン。",
-    type: "photos",
-    actionLabel: "Filter",
-    items: photoFeed.map((photo) => ({ ...photo })),
+    type: "stories",
+    actionLabel: "View all",
+    items: [
+      {
+        id: "habit-1",
+        title: "朝の散歩",
+        authors: "",
+        imageUrl: photoFeed[4].image,
+        imageAuto: false,
+        googleBooksId: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: "habit-2",
+        title: "ストレッチ",
+        authors: "",
+        imageUrl: photoFeed[5].image,
+        imageAuto: false,
+        googleBooksId: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      {
+        id: "habit-3",
+        title: "読書15分",
+        authors: "",
+        imageUrl: featuredStories[2].image,
+        imageAuto: false,
+        googleBooksId: null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    ],
   },
 ];
 
@@ -416,12 +494,18 @@ function BookItemModal({
   suggestionStatus,
   onSelectSuggestion,
   isSuggestEnabled,
+  isAutoSupported,
+  categoryTitle,
 }) {
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true">
       <div className="modal-card modal-card--book">
         <header className="modal-header">
-          <h3>{mode === "edit" ? "編集" : "追加"}</h3>
+          <h3>
+            {mode === "edit"
+              ? `${categoryTitle}を編集`
+              : `${categoryTitle}を追加`}
+          </h3>
           <button
             type="button"
             className="button-outline"
@@ -470,11 +554,12 @@ function BookItemModal({
                   </div>
                 ) : null}
               </div>
-            ) : (
+            ) : null}
+            {!isSuggestEnabled && categoryTitle === "本・漫画" ? (
               <p className="suggestion-status is-muted">
                 Google Books APIキーが未設定のためサジェストは無効です。
               </p>
-            )}
+            ) : null}
           </label>
 
           <label className="form-field">
@@ -489,31 +574,37 @@ function BookItemModal({
 
           <label className="form-field">
             <span>表紙画像</span>
-            <div className="toggle-row">
-              <span className="toggle-label">自動設定（Google Books）</span>
-              <div className="toggle-switch" role="group">
-                <button
-                  type="button"
-                  className={`toggle-option${
-                    draft.imageAuto ? " is-active" : ""
-                  }`}
-                  onClick={() => onToggleAuto(true)}
-                  aria-pressed={draft.imageAuto}
-                >
-                  ON
-                </button>
-                <button
-                  type="button"
-                  className={`toggle-option${
-                    !draft.imageAuto ? " is-active" : ""
-                  }`}
-                  onClick={() => onToggleAuto(false)}
-                  aria-pressed={!draft.imageAuto}
-                >
-                  OFF
-                </button>
+            {isAutoSupported ? (
+              <div className="toggle-row">
+                <span className="toggle-label">自動設定（Google Books）</span>
+                <div className="toggle-switch" role="group">
+                  <button
+                    type="button"
+                    className={`toggle-option${
+                      draft.imageAuto ? " is-active" : ""
+                    }`}
+                    onClick={() => onToggleAuto(true)}
+                    aria-pressed={draft.imageAuto}
+                  >
+                    ON
+                  </button>
+                  <button
+                    type="button"
+                    className={`toggle-option${
+                      !draft.imageAuto ? " is-active" : ""
+                    }`}
+                    onClick={() => onToggleAuto(false)}
+                    aria-pressed={!draft.imageAuto}
+                  >
+                    OFF
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <p className="suggestion-status is-muted">
+                画像は手動アップロードのみ対応しています。
+              </p>
+            )}
 
             <div className="upload-row">
               <img
@@ -522,7 +613,7 @@ function BookItemModal({
                 className="upload-preview"
               />
 
-              {draft.imageAuto ? (
+              {draft.imageAuto && isAutoSupported ? (
                 <div className="upload-placeholder">
                   <p>
                     {draft.imageUrl
@@ -659,8 +750,9 @@ function CategorySection({
   onItemDragOver,
   onItemDrop,
   onItemDragEnd,
-  onAddBook,
-  onEditBook,
+  onAddItem,
+  onEditItem,
+  isEditable,
 }) {
   const sectionClass = [
     "category-section",
@@ -689,8 +781,12 @@ function CategorySection({
             ⠿
           </span>
           <span className="drag-hint">ドラッグで並び替え</span>
-          {category.id === "books" ? (
-            <button type="button" className="primary" onClick={onAddBook}>
+          {isEditable ? (
+            <button
+              type="button"
+              className="primary"
+              onClick={() => onAddItem?.(category.id)}
+            >
               追加
             </button>
           ) : null}
@@ -723,23 +819,23 @@ function CategorySection({
                   src={story.imageUrl || GOOGLE_BOOKS_PLACEHOLDER}
                   alt={story.title}
                   className={
-                    category.id === "books" ? "story-image is-editable" : "story-image"
+                    isEditable ? "story-image is-editable" : "story-image"
                   }
-                  role={category.id === "books" ? "button" : undefined}
-                  tabIndex={category.id === "books" ? 0 : undefined}
+                  role={isEditable ? "button" : undefined}
+                  tabIndex={isEditable ? 0 : undefined}
                   onClick={
-                    category.id === "books"
+                    isEditable
                       ? () => {
-                          onEditBook?.(story);
+                          onEditItem?.(category.id, story);
                         }
                       : undefined
                   }
                   onKeyDown={
-                    category.id === "books"
+                    isEditable
                       ? (event) => {
                           if (event.key === "Enter" || event.key === " ") {
                             event.preventDefault();
-                            onEditBook?.(story);
+                            onEditItem?.(category.id, story);
                           }
                         }
                       : undefined
@@ -824,8 +920,9 @@ export default function Dashboard({ user }) {
 
   const [categories, setCategories] = useState(makeInitialCategories);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
-  const [bookMode, setBookMode] = useState("add");
-  const [bookDraft, setBookDraft] = useState({
+  const [itemMode, setItemMode] = useState("add");
+  const [activeCategoryId, setActiveCategoryId] = useState("books");
+  const [itemDraft, setItemDraft] = useState({
     id: "",
     title: "",
     authors: "",
@@ -844,31 +941,30 @@ export default function Dashboard({ user }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(BOOK_MANGA_STORAGE_KEY);
-    if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed)) return;
-      setCategories((prev) =>
-        prev.map((category) =>
-          category.id === "books"
-            ? { ...category, items: parsed }
-            : category
-        )
-      );
-    } catch {
-      return;
-    }
+    setCategories((prev) =>
+      prev.map((category) => {
+        const storageKey = CATEGORY_STORAGE_KEYS[category.id];
+        if (!storageKey) return category;
+        const stored = window.localStorage.getItem(storageKey);
+        if (!stored) return category;
+        try {
+          const parsed = JSON.parse(stored);
+          if (!Array.isArray(parsed)) return category;
+          return { ...category, items: parsed };
+        } catch {
+          return category;
+        }
+      })
+    );
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const books = categories.find((category) => category.id === "books");
-    if (!books) return;
-    window.localStorage.setItem(
-      BOOK_MANGA_STORAGE_KEY,
-      JSON.stringify(books.items)
-    );
+    categories.forEach((category) => {
+      const storageKey = CATEGORY_STORAGE_KEYS[category.id];
+      if (!storageKey) return;
+      window.localStorage.setItem(storageKey, JSON.stringify(category.items));
+    });
   }, [categories]);
 
   // --- Profile Edit
@@ -893,14 +989,15 @@ export default function Dashboard({ user }) {
     setIsEditing(false);
   };
 
-  const openAddBookModal = () => {
-    setBookMode("add");
-    setBookDraft({
+  const openAddItemModal = (categoryId) => {
+    setItemMode("add");
+    setActiveCategoryId(categoryId);
+    setItemDraft({
       id: "",
       title: "",
       authors: "",
       imageUrl: "",
-      imageAuto: true,
+      imageAuto: categoryId === "books",
       googleBooksId: null,
       createdAt: null,
       updatedAt: null,
@@ -911,11 +1008,15 @@ export default function Dashboard({ user }) {
     setIsBookModalOpen(true);
   };
 
-  const openEditBookModal = (item) => {
-    setBookMode("edit");
-    setBookDraft({ ...item });
+  const openEditItemModal = (categoryId, item) => {
+    setItemMode("edit");
+    setActiveCategoryId(categoryId);
+    setItemDraft({
+      ...item,
+      imageAuto: categoryId === "books" ? item.imageAuto : false,
+    });
     setSelectedSuggestion(
-      item.googleBooksId
+      categoryId === "books" && item.googleBooksId
         ? {
             id: item.googleBooksId,
             title: item.title,
@@ -931,7 +1032,7 @@ export default function Dashboard({ user }) {
 
   const closeBookModal = () => setIsBookModalOpen(false);
   const patchBookDraft = (patch) =>
-    setBookDraft((prev) => ({ ...prev, ...patch }));
+    setItemDraft((prev) => ({ ...prev, ...patch }));
 
   useEffect(() => {
     if (!googleBooksApiKey) {
@@ -940,7 +1041,13 @@ export default function Dashboard({ user }) {
       return;
     }
 
-    const query = bookDraft.title.trim();
+    if (activeCategoryId !== "books") {
+      setBookSuggestions([]);
+      setSuggestionStatus("idle");
+      return;
+    }
+
+    const query = itemDraft.title.trim();
     if (!query) {
       setBookSuggestions([]);
       setSuggestionStatus("idle");
@@ -980,7 +1087,7 @@ export default function Dashboard({ user }) {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [bookDraft.title, googleBooksApiKey]);
+  }, [itemDraft.title, googleBooksApiKey, activeCategoryId]);
 
   const handleSelectSuggestion = (item) => {
     setSelectedSuggestion(item);
@@ -988,12 +1095,12 @@ export default function Dashboard({ user }) {
       title: item.title,
       authors: item.authors,
       googleBooksId: item.id,
-      ...(bookDraft.imageAuto ? { imageUrl: item.imageUrl || "" } : {}),
+      ...(itemDraft.imageAuto ? { imageUrl: item.imageUrl || "" } : {}),
     });
   };
 
   const handleToggleAuto = (nextValue) => {
-    setBookDraft((prev) => {
+    setItemDraft((prev) => {
       if (!nextValue) {
         return { ...prev, imageAuto: false };
       }
@@ -1031,11 +1138,11 @@ export default function Dashboard({ user }) {
     const timestamp = Date.now();
     setCategories((prev) =>
       prev.map((category) => {
-        if (category.id !== "books") return category;
-        if (bookMode === "edit") {
+        if (category.id !== activeCategoryId) return category;
+        if (itemMode === "edit") {
           const nextItems = category.items.map((item) =>
-            item.id === bookDraft.id
-              ? { ...bookDraft, updatedAt: timestamp }
+            item.id === itemDraft.id
+              ? { ...itemDraft, updatedAt: timestamp }
               : item
           );
           return { ...category, items: nextItems };
@@ -1045,7 +1152,7 @@ export default function Dashboard({ user }) {
             ? crypto.randomUUID()
             : `book-${timestamp}-${Math.random().toString(16).slice(2)}`;
         const nextItem = {
-          ...bookDraft,
+          ...itemDraft,
           id,
           createdAt: timestamp,
           updatedAt: timestamp,
@@ -1141,6 +1248,7 @@ export default function Dashboard({ user }) {
         {categories.map((category) => {
           const isDragging = sectionDnd.dragState.source?.id === category.id;
           const isDragOver = sectionDnd.dragState.over?.id === category.id;
+          const isEditable = EDITABLE_CATEGORY_IDS.includes(category.id);
 
           return (
             <CategorySection
@@ -1157,8 +1265,9 @@ export default function Dashboard({ user }) {
               onItemDragOver={onItemDragOver}
               onItemDrop={onItemDrop}
               onItemDragEnd={itemDnd.clear}
-              onAddBook={openAddBookModal}
-              onEditBook={openEditBookModal}
+              onAddItem={openAddItemModal}
+              onEditItem={openEditItemModal}
+              isEditable={isEditable}
             />
           );
         })}
@@ -1176,8 +1285,8 @@ export default function Dashboard({ user }) {
 
       {isBookModalOpen ? (
         <BookItemModal
-          mode={bookMode}
-          draft={bookDraft}
+          mode={itemMode}
+          draft={itemDraft}
           onChange={patchBookDraft}
           onClose={closeBookModal}
           onSave={handleSaveBook}
@@ -1187,7 +1296,12 @@ export default function Dashboard({ user }) {
           suggestions={bookSuggestions}
           suggestionStatus={suggestionStatus}
           onSelectSuggestion={handleSelectSuggestion}
-          isSuggestEnabled={Boolean(googleBooksApiKey)}
+          isSuggestEnabled={Boolean(googleBooksApiKey) && activeCategoryId === "books"}
+          isAutoSupported={activeCategoryId === "books"}
+          categoryTitle={
+            categories.find((category) => category.id === activeCategoryId)
+              ?.title || ""
+          }
         />
       ) : null}
     </div>
