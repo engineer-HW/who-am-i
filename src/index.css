@@ -957,8 +957,8 @@ button.secondary {
 
 .story-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
   margin-top: 20px;
 }
 
@@ -983,7 +983,7 @@ button.secondary {
 
 .story-card img {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
   border-radius: 16px;
   object-fit: cover;
 }
