@@ -78,19 +78,25 @@ function App() {
 
   if (!user) {
     return (
-      <Login
-        onLogin={(credentials) => handleAuth('login', credentials)}
-        onSignup={(credentials) => handleAuth('signup', credentials)}
-        onPasswordResetRequest={handlePasswordResetRequest}
-        onPasswordReset={handlePasswordReset}
-        loading={authStatus === 'loading'}
-        errorMessage={authError}
-        resetInfo={resetInfo}
-      />
+      <div className="page-shell">
+        <Login
+          onLogin={(credentials) => handleAuth('login', credentials)}
+          onSignup={(credentials) => handleAuth('signup', credentials)}
+          onPasswordResetRequest={handlePasswordResetRequest}
+          onPasswordReset={handlePasswordReset}
+          loading={authStatus === 'loading'}
+          errorMessage={authError}
+          resetInfo={resetInfo}
+        />
+      </div>
     )
   }
 
-  return <Dashboard user={user} onLogout={handleLogout} />
+  return (
+    <div className="page-shell">
+      <Dashboard user={user} onLogout={handleLogout} />
+    </div>
+  )
 }
 
 export default App
