@@ -10,7 +10,12 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #ffffff 0%, #f5f7fb 45%, #eef2f9 100%);
+  background: radial-gradient(
+    circle at top,
+    #ffffff 0%,
+    #f5f7fb 45%,
+    #eef2f9 100%
+  );
 }
 
 #root {
@@ -20,7 +25,13 @@ body {
 .page-shell {
   min-height: 100vh;
   padding: 0 16px;
-  background: linear-gradient(90deg, #eef2f9 0%, #f5f7fb 25%, #f5f7fb 75%, #eef2f9 100%);
+  background: linear-gradient(
+    90deg,
+    #eef2f9 0%,
+    #f5f7fb 25%,
+    #f5f7fb 75%,
+    #eef2f9 100%
+  );
 }
 
 .app {
@@ -322,7 +333,8 @@ button.secondary {
 }
 
 .travel-app {
-  width: min(100%, 1280px);
+  width: 100%;
+  max-width: clamp(960px, 92vw, 1920px);
   margin: 0 auto;
   padding: 32px 32px 64px;
   display: grid;
@@ -339,7 +351,13 @@ button.secondary {
 
 @media (min-width: 1440px) {
   .page-shell {
-    background: linear-gradient(90deg, #e9eef7 0%, #f5f7fb 30%, #f5f7fb 70%, #e9eef7 100%);
+    background: linear-gradient(
+      90deg,
+      #e9eef7 0%,
+      #f5f7fb 30%,
+      #f5f7fb 70%,
+      #e9eef7 100%
+    );
   }
 
   .travel-app {
