@@ -842,9 +842,14 @@ function CategorySection({
                   }
                 />
                 <p className="story-title">{story.title}</p>
-                {story.authors ? (
-                  <p className="story-author">{story.authors}</p>
-                ) : null}
+                <p
+                  className={`story-author${
+                    story.authors ? "" : " is-empty"
+                  }`}
+                  aria-hidden={!story.authors}
+                >
+                  {story.authors || " "}
+                </p>
               </article>
             );
           })}

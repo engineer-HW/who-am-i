@@ -1000,6 +1000,10 @@ button.secondary {
   color: #94a3b8;
 }
 
+.story-author.is-empty {
+  visibility: hidden;
+}
+
 .story-image.is-editable {
   cursor: pointer;
 }
