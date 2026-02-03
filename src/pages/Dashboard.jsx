@@ -122,6 +122,7 @@ const makeInitialCategories = () => [
     subtitle: "最近チェックした作品。",
     type: "stories",
     actionLabel: "View all",
+    isVisible: true,
     items: featuredStories.map((story, index) => ({
       id: `book-${index + 1}`,
       title: story.title,
@@ -139,6 +140,7 @@ const makeInitialCategories = () => [
     subtitle: "気になるタイトル。",
     type: "stories",
     actionLabel: "View all",
+    isVisible: true,
     items: [
       {
         id: "game-1",
@@ -188,6 +190,7 @@ const makeInitialCategories = () => [
     subtitle: "続けたいルーティン。",
     type: "stories",
     actionLabel: "View all",
+    isVisible: true,
     items: [
       {
         id: "habit-1",
@@ -884,21 +887,138 @@ function CategorySection({
 }
 
 /** ---------------------------
+ *  Settings Panel
+ *  -------------------------- */
+function SettingsPanel({
+  categories,
+  onAddCategory,
+  onDeleteCategory,
+  onToggleVisibility,
+  onBack,
+}) {
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const trimmedTitle = title.trim();
+    const trimmedSubtitle = subtitle.trim();
+    if (!trimmedTitle) return;
+    onAddCategory({
+      title: trimmedTitle,
+      subtitle: trimmedSubtitle || "新しいカテゴリです。",
+    });
+    setTitle("");
+    setSubtitle("");
+  };
+
+  return (
+    <section className="settings-panel" aria-labelledby="category-settings">
+      <header className="settings-panel__header">
+        <button type="button" className="button-outline" onClick={onBack}>
+          閲覧画面に戻る
+        </button>
+        <div>
+          <h2 id="category-settings">カテゴリ管理</h2>
+          <p className="settings-panel__subtitle">
+            表示のON/OFFやカテゴリの追加・削除ができます。
+          </p>
+        </div>
+      </header>
+
+      <form className="settings-form" onSubmit={handleSubmit}>
+        <label className="form-field">
+          <span>カテゴリ名</span>
+          <input
+            type="text"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="例）映画"
+            required
+          />
+        </label>
+        <label className="form-field">
+          <span>説明（任意）</span>
+          <input
+            type="text"
+            value={subtitle}
+            onChange={(event) => setSubtitle(event.target.value)}
+            placeholder="カテゴリの説明を入力"
+          />
+        </label>
+        <button type="submit" className="primary">
+          追加
+        </button>
+      </form>
+
+      <div className="settings-list" role="list">
+        {categories.map((category) => (
+          <div key={category.id} className="settings-item" role="listitem">
+            <div>
+              <p className="settings-item__title">{category.title}</p>
+              <p className="settings-item__subtitle">{category.subtitle}</p>
+            </div>
+            <div className="settings-item__actions">
+              <label className="toggle-visibility">
+                <input
+                  type="checkbox"
+                  checked={category.isVisible !== false}
+                  onChange={() => onToggleVisibility(category.id)}
+                />
+                <span>表示</span>
+              </label>
+              <button
+                type="button"
+                className="button-outline"
+                onClick={() => onDeleteCategory(category.id)}
+              >
+                削除
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** ---------------------------
  *  Main
  *  -------------------------- */
-function MainHeader() {
+function MainHeader({ isSettingsView, onOpenSettings, onBack }) {
   return (
     <header className="top-bar">
-      <div className="search-field" role="search">
-        <span aria-hidden="true">🔍</span>
-        <input type="search" placeholder="Search stories" />
-      </div>
+      {isSettingsView ? (
+        <div className="settings-header">
+          <button type="button" className="back-link" onClick={onBack}>
+            ← ダッシュボードへ戻る
+          </button>
+          <div>
+            <p className="settings-eyebrow">Settings</p>
+          </div>
+        </div>
+      ) : (
+        <div className="search-field" role="search">
+          <span aria-hidden="true">🔍</span>
+          <input type="search" placeholder="Search stories" />
+        </div>
+      )}
       <div className="top-actions">
         <button type="button" className="icon-button" aria-label="通知">
           🔔
         </button>
         <button type="button" className="icon-button" aria-label="メニュー">
           ⋯
+        </button>
+        <button
+          type="button"
+          className={`icon-button${isSettingsView ? " is-active" : ""}`}
+          onClick={isSettingsView ? undefined : onOpenSettings}
+          aria-label="設定"
+          aria-pressed={isSettingsView}
+          disabled={isSettingsView}
+        >
+          ⚙️
         </button>
       </div>
     </header>
@@ -911,6 +1031,7 @@ function MainHeader() {
 export default function Dashboard({ user }) {
   const googleBooksApiKey =
     import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || "";
+  const [activeView, setActiveView] = useState("main");
   const [profile, setProfile] = useState({
     name: user?.name || "渡邊 輝",
     age: user?.age || "26",
@@ -940,6 +1061,9 @@ export default function Dashboard({ user }) {
   const [bookSuggestions, setBookSuggestions] = useState([]);
   const [suggestionStatus, setSuggestionStatus] = useState("idle");
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const visibleCategories = categories.filter(
+    (category) => category.isVisible !== false
+  );
 
   const sectionDnd = useDndReorder();
   const itemDnd = useDndReorder();
@@ -979,6 +1103,9 @@ export default function Dashboard({ user }) {
   };
   const closeEdit = () => setIsEditing(false);
   const patchDraft = (patch) => setDraft((prev) => ({ ...prev, ...patch }));
+
+  const openSettings = () => setActiveView("settings");
+  const closeSettings = () => setActiveView("main");
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
@@ -1038,6 +1165,60 @@ export default function Dashboard({ user }) {
   const closeBookModal = () => setIsBookModalOpen(false);
   const patchBookDraft = (patch) =>
     setItemDraft((prev) => ({ ...prev, ...patch }));
+
+  const handleAddCategory = ({ title, subtitle }) => {
+    const timestamp = Date.now();
+    const baseId = title
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    const id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${baseId || "category"}-${timestamp}`;
+    setCategories((prev) => [
+      ...prev,
+      {
+        id,
+        title,
+        subtitle,
+        type: "stories",
+        actionLabel: "View all",
+        isVisible: true,
+        isCustom: true,
+        items: [],
+      },
+    ]);
+  };
+
+  const handleDeleteCategory = (categoryId) => {
+    setCategories((prev) => {
+      const nextCategories = prev.filter(
+        (category) => category.id !== categoryId
+      );
+      setActiveCategoryId((prevId) => {
+        if (prevId !== categoryId) return prevId;
+        return nextCategories[0]?.id || "books";
+      });
+      return nextCategories;
+    });
+    if (typeof window !== "undefined") {
+      const storageKey = CATEGORY_STORAGE_KEYS[categoryId];
+      if (storageKey) {
+        window.localStorage.removeItem(storageKey);
+      }
+    }
+  };
+
+  const handleToggleVisibility = (categoryId) => {
+    setCategories((prev) =>
+      prev.map((category) =>
+        category.id === categoryId
+          ? { ...category, isVisible: category.isVisible === false }
+          : category
+      )
+    );
+  };
 
   useEffect(() => {
     if (!googleBooksApiKey) {
@@ -1248,34 +1429,49 @@ export default function Dashboard({ user }) {
       <Sidebar profile={profile} onEdit={openEdit} />
 
       <main className="travel-main">
-        <MainHeader />
+        <MainHeader
+          isSettingsView={activeView === "settings"}
+          onOpenSettings={openSettings}
+          onBack={closeSettings}
+        />
 
-        {categories.map((category) => {
-          const isDragging = sectionDnd.dragState.source?.id === category.id;
-          const isDragOver = sectionDnd.dragState.over?.id === category.id;
-          const isEditable = EDITABLE_CATEGORY_IDS.includes(category.id);
+        {activeView === "settings" ? (
+          <SettingsPanel
+            categories={categories}
+            onAddCategory={handleAddCategory}
+            onDeleteCategory={handleDeleteCategory}
+            onToggleVisibility={handleToggleVisibility}
+            onBack={closeSettings}
+          />
+        ) : (
+          visibleCategories.map((category) => {
+            const isDragging = sectionDnd.dragState.source?.id === category.id;
+            const isDragOver = sectionDnd.dragState.over?.id === category.id;
+            const isEditable =
+              EDITABLE_CATEGORY_IDS.includes(category.id) || category.isCustom;
 
-          return (
-            <CategorySection
-              key={category.id}
-              category={category}
-              isDragging={isDragging}
-              isDragOver={isDragOver}
-              onSectionDragStart={onSectionDragStart(category.id)}
-              onSectionDragOver={onSectionDragOver(category.id)}
-              onSectionDrop={onSectionDrop(category.id)}
-              onSectionDragEnd={sectionDnd.clear}
-              itemDragState={itemDnd.dragState}
-              onItemDragStart={onItemDragStart}
-              onItemDragOver={onItemDragOver}
-              onItemDrop={onItemDrop}
-              onItemDragEnd={itemDnd.clear}
-              onAddItem={openAddItemModal}
-              onEditItem={openEditItemModal}
-              isEditable={isEditable}
-            />
-          );
-        })}
+            return (
+              <CategorySection
+                key={category.id}
+                category={category}
+                isDragging={isDragging}
+                isDragOver={isDragOver}
+                onSectionDragStart={onSectionDragStart(category.id)}
+                onSectionDragOver={onSectionDragOver(category.id)}
+                onSectionDrop={onSectionDrop(category.id)}
+                onSectionDragEnd={sectionDnd.clear}
+                itemDragState={itemDnd.dragState}
+                onItemDragStart={onItemDragStart}
+                onItemDragOver={onItemDragOver}
+                onItemDrop={onItemDrop}
+                onItemDragEnd={itemDnd.clear}
+                onAddItem={openAddItemModal}
+                onEditItem={openEditItemModal}
+                isEditable={isEditable}
+              />
+            );
+          })
+        )}
       </main>
 
       {isEditing ? (
