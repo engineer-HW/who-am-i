@@ -376,12 +376,34 @@ button.secondary {
   flex-direction: column;
   justify-content: space-between;
   gap: 32px;
+  min-height: 100vh;
 }
 
 .top-bar {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.settings-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.settings-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #94a3b8;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 22px;
+  color: #0f172a;
 }
 
 .back-link {
@@ -428,6 +450,96 @@ button.secondary {
   background: #fff;
   cursor: pointer;
   font-size: 16px;
+}
+
+.icon-button.is-active {
+  border-color: #6366f1;
+  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);
+}
+
+.icon-button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.settings-panel {
+  background: #fff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 20px;
+  flex: 1;
+}
+
+.settings-panel__header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.settings-panel__header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.settings-panel__subtitle {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.settings-form {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: end;
+}
+
+.settings-form .primary {
+  justify-self: start;
+}
+
+.settings-list {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.settings-item__title {
+  margin: 0;
+  font-weight: 600;
+  color: #1f2933;
+}
+
+.settings-item__subtitle {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.settings-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #475569;
 }
 
 .profile-card {
