@@ -1,119 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  featuredStories,
+  photoFeed,
+  suggestionProfiles,
+  CATEGORY_STORAGE_KEYS,
+  EDITABLE_CATEGORY_IDS,
+} from "../data/categoryItem";
+import { defaultProfileImage } from "../data/profileImage";
+import { mbtiOptions } from "../data/mbtiOption";
 
 /** ---------------------------
  *  Mock Data / Constants
  *  -------------------------- */
-const featuredStories = [
-  {
-    title: "Short Means",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    title: "Summer Escape",
-    image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    title: "Knight's Story",
-    image:
-      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    title: "Love Story",
-    image:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    title: "Paradise City",
-    image:
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=400&q=80",
-  },
-];
-
-const photoFeed = [
-  {
-    id: "alps-house",
-    image:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "arctic-boat",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "lake-couple",
-    image:
-      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "valley-hike",
-    image:
-      "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "goat-keeper",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: "mountain-peaks",
-    image:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80",
-  },
-];
-
-const suggestionProfiles = [
-  {
-    name: "Johan",
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80",
-  },
-  {
-    name: "Mina",
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80",
-  },
-  {
-    name: "Hugo",
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=80&q=80",
-  },
-];
-
-const defaultProfileImage =
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80";
-
-const mbtiOptions = [
-  { code: "ISTJ", label: "管理者" },
-  { code: "ISFJ", label: "擁護者" },
-  { code: "INFJ", label: "提唱者" },
-  { code: "INTJ", label: "建築家" },
-  { code: "ISTP", label: "巨匠" },
-  { code: "ISFP", label: "冒険家" },
-  { code: "INFP", label: "仲介者" },
-  { code: "INTP", label: "論理学者" },
-  { code: "ESTP", label: "起業家" },
-  { code: "ESFP", label: "エンターテイナー" },
-  { code: "ENFP", label: "広報運動家" },
-  { code: "ENTP", label: "討論者" },
-  { code: "ESTJ", label: "幹部" },
-  { code: "ESFJ", label: "領事" },
-  { code: "ENFJ", label: "主人公" },
-  { code: "ENTJ", label: "指揮官" },
-];
 
 const GOOGLE_BOOKS_PLACEHOLDER =
   "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=400&q=80";
-
-const CATEGORY_STORAGE_KEYS = {
-  books: "book_manga_items",
-  games: "game_items",
-  habits: "habit_items",
-};
-
-const EDITABLE_CATEGORY_IDS = ["books", "games", "habits"];
 
 const makeInitialCategories = () => [
   {
@@ -638,7 +539,11 @@ function BookItemModal({
                   <span className="upload-text">ここにファイルをドロップ</span>
                   <span className="upload-subtext">または</span>
                   <span className="upload-button">ファイルを選択</span>
-                  <input type="file" accept="image/*" onChange={onImageChange} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onImageChange}
+                  />
                 </label>
               )}
             </div>
@@ -843,9 +748,7 @@ function CategorySection({
                 />
                 <p className="story-title">{story.title}</p>
                 <p
-                  className={`story-author${
-                    story.authors ? "" : " is-empty"
-                  }`}
+                  className={`story-author${story.authors ? "" : " is-empty"}`}
                   aria-hidden={!story.authors}
                 >
                   {story.authors || " "}
@@ -909,8 +812,7 @@ function MainHeader() {
  *  Dashboard (container)
  *  -------------------------- */
 export default function Dashboard({ user }) {
-  const googleBooksApiKey =
-    import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || "";
+  const googleBooksApiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || "";
   const [profile, setProfile] = useState({
     name: user?.name || "渡邊 輝",
     age: user?.age || "26",
@@ -1301,7 +1203,9 @@ export default function Dashboard({ user }) {
           suggestions={bookSuggestions}
           suggestionStatus={suggestionStatus}
           onSelectSuggestion={handleSelectSuggestion}
-          isSuggestEnabled={Boolean(googleBooksApiKey) && activeCategoryId === "books"}
+          isSuggestEnabled={
+            Boolean(googleBooksApiKey) && activeCategoryId === "books"
+          }
           isAutoSupported={activeCategoryId === "books"}
           categoryTitle={
             categories.find((category) => category.id === activeCategoryId)

@@ -1,0 +1,18 @@
+export const mbtiOptions = [
+  { code: "ISTJ", label: "管理者" },
+  { code: "ISFJ", label: "擁護者" },
+  { code: "INFJ", label: "提唱者" },
+  { code: "INTJ", label: "建築家" },
+  { code: "ISTP", label: "巨匠" },
+  { code: "ISFP", label: "冒険家" },
+  { code: "INFP", label: "仲介者" },
+  { code: "INTP", label: "論理学者" },
+  { code: "ESTP", label: "起業家" },
+  { code: "ESFP", label: "エンターテイナー" },
+  { code: "ENFP", label: "広報運動家" },
+  { code: "ENTP", label: "討論者" },
+  { code: "ESTJ", label: "幹部" },
+  { code: "ESFJ", label: "領事" },
+  { code: "ENFJ", label: "主人公" },
+  { code: "ENTJ", label: "指揮官" },
+];
