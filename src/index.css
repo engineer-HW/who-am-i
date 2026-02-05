@@ -407,6 +407,7 @@ button.secondary {
 }
 
 .back-link {
+  margin-right: auto;
   border: none;
   background: transparent;
   color: #4b5563;

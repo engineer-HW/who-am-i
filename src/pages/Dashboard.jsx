@@ -896,9 +896,6 @@ function MainHeader({ isSettingsView, onOpenSettings, onBack }) {
           <button type="button" className="back-link" onClick={onBack}>
             ← ダッシュボードへ戻る
           </button>
-          <div>
-            <p className="settings-eyebrow">Settings</p>
-          </div>
         </div>
       ) : (
         <div className="search-field" role="search">
