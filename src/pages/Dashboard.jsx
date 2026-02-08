@@ -888,27 +888,22 @@ function SettingsPanel({
 /** ---------------------------
  *  Main
  *  -------------------------- */
-function MainHeader({ isSettingsView, onOpenSettings, onBack }) {
+function MainHeader({ isSettingsView, onOpenSettings, profile }) {
   return (
     <header className="top-bar">
-      {isSettingsView ? (
-        <div className="settings-header">
-          <button type="button" className="back-link" onClick={onBack}>
-            ← ダッシュボードへ戻る
-          </button>
-        </div>
-      ) : (
-        <div className="search-field" role="search">
-          <span aria-hidden="true">🔍</span>
-          <input type="search" placeholder="Search stories" />
-        </div>
-      )}
+      <div className="app-brand" aria-label="アプリ名">
+        <span className="app-brand__name">who-am-ai</span>
+      </div>
       <div className="top-actions">
         <button type="button" className="icon-button" aria-label="通知">
           🔔
         </button>
-        <button type="button" className="icon-button" aria-label="メニュー">
-          ⋯
+        <button type="button" className="avatar-button" aria-label="プロフィール">
+          <img
+            className="avatar-image"
+            src={profile?.avatarUrl}
+            alt={`${profile?.name || "ユーザー"}のアバター`}
+          />
         </button>
         <button
           type="button"
@@ -1331,7 +1326,7 @@ export default function Dashboard({ user }) {
         <MainHeader
           isSettingsView={activeView === "settings"}
           onOpenSettings={openSettings}
-          onBack={closeSettings}
+          profile={profile}
         />
 
         {activeView === "settings" ? (
